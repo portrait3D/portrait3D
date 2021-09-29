@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:portrait3d"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
+        Title="MainWindow" Height="455" Width="800">
+    <Grid Height="440" VerticalAlignment="Top">
+        <Image x:Name="Render" HorizontalAlignment="Left" Margin="10,10,0,10" Width="640" Height="420"/>
     </Grid>
 </Window>
