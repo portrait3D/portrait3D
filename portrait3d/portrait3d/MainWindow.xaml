@@ -5,8 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:portrait3d"
         mc:Ignorable="d"
-        Title="MainWindow" Height="455" Width="800">
-    <Grid Height="440" VerticalAlignment="Top">
-        <Image x:Name="Render" HorizontalAlignment="Left" Margin="10,10,0,10" Width="640" Height="420"/>
+        Title="MainWindow" Height="540" Width="800" Loaded="WindowLoaded" Closing="WindowClosing">
+    <Grid Height="520" VerticalAlignment="Top">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="71*"/>
+            <ColumnDefinition Width="9*"/>
+        </Grid.ColumnDefinitions>
+        <Border BorderThickness="1" BorderBrush="Black" HorizontalAlignment="Left" Width="640" Height="480" Margin="10,10,0,0" VerticalAlignment="Top">
+            <Image x:Name="Render" Height="478" HorizontalAlignment="Left" Width="640"/>
+        </Border>
+        <TextBox HorizontalAlignment="Left" Margin="10,495,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="640" Height="15" Name="statusBarText"/>
+        <Button Content="Reset" HorizontalAlignment="Left" Margin="675,470,0,0" VerticalAlignment="Top" Click="ButtonResetReconstructionClick" Height="20" Width="94" Grid.ColumnSpan="2"/>
+        <CheckBox x:Name="checkBoxCaptureColor" Content="Mode couleur" HorizontalAlignment="Left" Margin="675,393,0,0" VerticalAlignment="Top" Checked="CheckBoxCaptureColor" Unchecked="CheckBoxCaptureColor" Grid.ColumnSpan="2"/>
+        <Button Content="Stop" HorizontalAlignment="Left" Margin="675,445,0,0" VerticalAlignment="Top" Width="94" Height="20" Click="Stop" Grid.ColumnSpan="2"/>
+        <Button Content="Start" HorizontalAlignment="Left" Margin="675,420,0,0" VerticalAlignment="Top" Width="94" Height="20" Click="Start" Grid.ColumnSpan="2"/>
     </Grid>
 </Window>

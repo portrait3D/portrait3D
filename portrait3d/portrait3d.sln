@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "portrait3d", "portrait3d\portrait3d.csproj", "{131515DC-C993-461C-9F1E-027F23BD9FAD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{58851747-F078-44E1-94B0-99EF065B3319} = {58851747-F078-44E1-94B0-99EF065B3319}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Kinect.Toolkit.Fusion", "Microsoft.Kinect.Toolkit.Fusion\Microsoft.Kinect.Toolkit.Fusion.csproj", "{58851747-F078-44E1-94B0-99EF065B3319}"
 EndProject
