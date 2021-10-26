@@ -1,23 +1,28 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
-using Microsoft.Kinect;
-using Microsoft.Kinect.Toolkit.Fusion;
+﻿//------------------------------------------------------------------------------
+// <copyright file="MainWindow.xaml.cs" company="Microsoft">
+//     Copyright (c) Microsoft Corporation.  All rights reserved.
+// </copyright>
+//------------------------------------------------------------------------------
 
-namespace portrait3d
+namespace Microsoft.Samples.Kinect.KinectFusionColorBasics
 {
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Media;
+    using System.Windows.Media.Imaging;
+    using System.Windows.Threading;
+    using Microsoft.Kinect;
+    using Microsoft.Kinect.Toolkit.Fusion;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window, IDisposable
     {
-
         /// <summary>
         /// Max tracking error count, we will reset the reconstruction if tracking errors
         /// reach this number
@@ -247,12 +252,14 @@ namespace portrait3d
         /// </summary>
         private int colorHeight = 0;
 
+        private bool isRunning = false;
+
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         /// <summary>
@@ -261,7 +268,7 @@ namespace portrait3d
         /// </summary>
         ~MainWindow()
         {
-            Dispose(false);
+            this.Dispose(false);
         }
 
         /// <summary>
@@ -269,7 +276,7 @@ namespace portrait3d
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
 
             // This object will be cleaned up by the Dispose method.
             GC.SuppressFinalize(this);
@@ -281,34 +288,34 @@ namespace portrait3d
         /// <param name="disposing">Whether the function was called from Dispose.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!this.disposed)
             {
-                if (null != depthFloatBuffer)
+                if (null != this.depthFloatBuffer)
                 {
-                    depthFloatBuffer.Dispose();
+                    this.depthFloatBuffer.Dispose();
                 }
 
-                if (null != mappedColorFrame)
+                if (null != this.mappedColorFrame)
                 {
-                    mappedColorFrame.Dispose();
+                    this.mappedColorFrame.Dispose();
                 }
 
-                if (null != pointCloudBuffer)
+                if (null != this.pointCloudBuffer)
                 {
-                    pointCloudBuffer.Dispose();
+                    this.pointCloudBuffer.Dispose();
                 }
 
-                if (null != shadedSurfaceColorFrame)
+                if (null != this.shadedSurfaceColorFrame)
                 {
-                    shadedSurfaceColorFrame.Dispose();
+                    this.shadedSurfaceColorFrame.Dispose();
                 }
 
-                if (null != volume)
+                if (null != this.volume)
                 {
-                    volume.Dispose();
+                    this.volume.Dispose();
                 }
 
-                disposed = true;
+                this.disposed = true;
             }
         }
 
@@ -329,8 +336,6 @@ namespace portrait3d
 
                 case DepthImageFormat.Resolution80x60Fps30:
                     return new Size(80, 60);
-                case DepthImageFormat.Undefined:
-                    break;
             }
 
             throw new ArgumentOutOfRangeException("imageFormat");
@@ -365,8 +370,6 @@ namespace portrait3d
 
                 case ColorImageFormat.YuvResolution640x480Fps15:
                     return new Size(640, 480);
-                case ColorImageFormat.Undefined:
-                    break;
             }
 
             throw new ArgumentOutOfRangeException("imageFormat");
@@ -455,7 +458,7 @@ namespace portrait3d
                 null);
 
             // Set the image we display to point to the bitmap where we'll put the image data
-            this.Render.Source = this.colorBitmap;
+            this.Image.Source = this.colorBitmap;
 
             // Add an event handler to be called whenever depth and color both have new data
             this.sensor.AllFramesReady += this.SensorFramesReady;
@@ -481,12 +484,12 @@ namespace portrait3d
             }
             catch (InvalidOperationException ex)
             {
-                 this.statusBarText.Text = ex.Message;
+                this.statusBarText.Text = ex.Message;
                 return;
             }
             catch (DllNotFoundException)
             {
-                 this.statusBarText.Text = this.statusBarText.Text = Properties.Resources.MissingPrerequisite;
+                this.statusBarText.Text = this.statusBarText.Text = Properties.Resources.MissingPrerequisite;
                 return;
             }
 
@@ -516,6 +519,11 @@ namespace portrait3d
 
             // Allocate mapped color points (i.e. color in depth frame of reference)
             this.mappedColorPixels = new int[depthImageArraySize];
+
+            this.sensor.DepthStream.Range = DepthRange.Default;
+
+            this.captureColor = this.checkBoxCaptureColor.IsChecked.GetValueOrDefault();
+
         }
 
         /// <summary>
@@ -667,7 +675,7 @@ namespace portrait3d
                 else
                 {
                     Matrix4 calculatedCameraPose = this.volume.GetCurrentWorldToCameraTransform();
-
+                     
                     // Set the camera pose and reset tracking errors
                     this.worldToCameraTransform = calculatedCameraPose;
                     this.trackingErrorCount = 0;
@@ -744,32 +752,32 @@ namespace portrait3d
                     0,
                     this.depthHeight,
                     y =>
-                    {
-                        int destIndex = y * this.depthWidth;
-                        int flippedDestIndex = destIndex + (this.depthWidth - 1); // horizontally mirrored
-
-                        for (int x = 0; x < this.depthWidth; ++x, ++destIndex, --flippedDestIndex)
                         {
-                            // calculate index into depth array
-                            int colorInDepthX = colorCoordinates[destIndex].X;
-                            int colorInDepthY = colorCoordinates[destIndex].Y;
+                            int destIndex = y * this.depthWidth;
+                            int flippedDestIndex = destIndex + (this.depthWidth - 1); // horizontally mirrored
 
-                            // make sure the depth pixel maps to a valid point in color space
-                            if (colorInDepthX >= 0 && colorInDepthX < this.colorWidth && colorInDepthY >= 0
-                                && colorInDepthY < this.colorHeight && depthImagePixels[destIndex].Depth != 0)
+                            for (int x = 0; x < this.depthWidth; ++x, ++destIndex, --flippedDestIndex)
                             {
-                                // Calculate index into color array- this will perform a horizontal flip as well
-                                int sourceColorIndex = colorInDepthX + (colorInDepthY * this.colorWidth);
+                                // calculate index into depth array
+                                int colorInDepthX = colorCoordinates[destIndex].X;
+                                int colorInDepthY = colorCoordinates[destIndex].Y;
 
-                                // Copy color pixel
-                                this.mappedColorPixels[flippedDestIndex] = rawColorPixels[sourceColorIndex];
+                                // make sure the depth pixel maps to a valid point in color space
+                                if (colorInDepthX >= 0 && colorInDepthX < this.colorWidth && colorInDepthY >= 0
+                                    && colorInDepthY < this.colorHeight && depthImagePixels[destIndex].Depth != 0)
+                                {
+                                    // Calculate index into color array- this will perform a horizontal flip as well
+                                    int sourceColorIndex = colorInDepthX + (colorInDepthY * this.colorWidth);
+
+                                    // Copy color pixel
+                                    this.mappedColorPixels[flippedDestIndex] = rawColorPixels[sourceColorIndex];
+                                }
+                                else
+                                {
+                                    this.mappedColorPixels[flippedDestIndex] = 0;
+                                }
                             }
-                            else
-                            {
-                                this.mappedColorPixels[flippedDestIndex] = 0;
-                            }
-                        }
-                    });
+                        });
             }
 
             this.mappedColorFrame.CopyPixelDataFrom(this.mappedColorPixels);
@@ -801,7 +809,7 @@ namespace portrait3d
                     float minDist = (this.minDepthClip < this.maxDepthClip) ? this.minDepthClip : this.maxDepthClip;
                     worldToVolumeTransform.M43 -= minDist * VoxelsPerMeter;
 
-                    this.volume.ResetReconstruction(this.worldToCameraTransform, worldToVolumeTransform);
+                    this.volume.ResetReconstruction(this.worldToCameraTransform, worldToVolumeTransform); 
                 }
                 else
                 {
@@ -836,13 +844,13 @@ namespace portrait3d
         {
             if (null == this.sensor)
             {
-                 this.statusBarText.Text = Properties.Resources.ConnectDeviceFirst;
+                this.statusBarText.Text = Properties.Resources.ConnectDeviceFirst;
                 return;
             }
 
             // reset the reconstruction and update the status text
             this.ResetReconstruction();
-             this.statusBarText.Text = Properties.Resources.ResetReconstruction;
+            this.statusBarText.Text = Properties.Resources.ResetReconstruction;
         }
 
         /// <summary>
@@ -852,63 +860,27 @@ namespace portrait3d
         /// <param name="e">event arguments</param>
         private void CheckBoxCaptureColor(object sender, RoutedEventArgs e)
         {
-            this.captureColor = true;
-            if (this.checkBoxCaptureColor.IsChecked.GetValueOrDefault())
+            if (!this.isRunning)
             {
-                this.captureColor = true;
+                if (this.checkBoxCaptureColor.IsChecked.GetValueOrDefault())
+                {
+                    this.captureColor = true;
+                }
+                else
+                {
+                    this.captureColor = false;
+                }
             }
             else
             {
-                this.captureColor = false;
+                this.checkBoxCaptureColor.IsChecked = this.captureColor;
             }
         }
 
         private void Start(object sender, RoutedEventArgs e)
         {
-            if (!this.sensor.IsRunning)
+            if (this.isRunning)
             {
-
-                // Start the sensor!
-                try
-                {
-                    this.sensor.Start();
-                    this.sensor.ElevationAngle = 10;
-                }
-                catch (IOException ex)
-                {
-                    // Device is in use
-                    this.sensor = null;
-                    this.statusBarText.Text = ex.Message;
-
-                    return;
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // Device is not valid, not supported or hardware feature unavailable
-                    this.sensor = null;
-                    this.statusBarText.Text = ex.Message;
-
-                    return;
-                }
-
-                this.checkBoxCaptureColor.IsChecked = this.captureColor;
-
-                // Initialize and start the FPS timer
-                this.fpsTimer = new DispatcherTimer();
-                this.fpsTimer.Tick += new EventHandler(this.FpsTimerTick);
-                this.fpsTimer.Interval = new TimeSpan(0, 0, FpsInterval);
-
-                this.fpsTimer.Start();
-
-                this.lastFPSTimestamp = DateTime.UtcNow;
-            }
-        }
-
-        private void Stop(object sender, RoutedEventArgs e)
-        {
-            if (this.sensor.IsRunning)
-            {
-                // Stop the sensor!
                 try
                 {
                     this.sensor.Stop();
@@ -934,6 +906,49 @@ namespace portrait3d
                 this.fpsTimer = null;
 
                 this.lastFPSTimestamp = DateTime.MinValue;
+
+                this.Control.Content = "Start";
+                this.isRunning = !this.isRunning;
+            }
+            else
+            {
+                // Start the sensor!
+                try
+                {
+                    this.sensor.Start();
+                    this.sensor.ElevationAngle = 10;
+                }
+                catch (IOException ex)
+                {
+                    // Device is in use
+                    this.sensor = null;
+                    this.statusBarText.Text = ex.Message;
+
+                    return;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Device is not valid, not supported or hardware feature unavailable
+                    this.sensor = null;
+                    this.statusBarText.Text = ex.Message;
+
+                    return;
+                }
+
+
+                this.checkBoxCaptureColor.IsChecked = this.captureColor;
+
+                // Initialize and start the FPS timer
+                this.fpsTimer = new DispatcherTimer();
+                this.fpsTimer.Tick += new EventHandler(this.FpsTimerTick);
+                this.fpsTimer.Interval = new TimeSpan(0, 0, FpsInterval);
+
+                this.fpsTimer.Start();
+
+                this.lastFPSTimestamp = DateTime.UtcNow;
+
+                this.Control.Content = "Stop";
+                this.isRunning = !this.isRunning;
             }
         }
     }
