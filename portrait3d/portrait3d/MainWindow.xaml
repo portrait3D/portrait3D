@@ -1,9 +1,8 @@
-﻿<Window x:Class="Microsoft.Samples.Kinect.KinectFusionColorBasics.MainWindow"
+﻿<Window x:Class="Portrait3D.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Kinect Fusion Color Basics" Height="735" Width="770" Loaded="WindowLoaded" Closing="WindowClosing">
+        Title="Portrait 3D" Height="735" Width="770" Loaded="WindowLoaded" Closing="WindowClosing">
 
-   
     <Grid Name="layoutGrid" Margin="10 0 10 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -11,17 +10,15 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="0 0 0 20"/>
-    <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
+        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
             <Image Name="Image" Width="640" Height="480"/>
         </Viewbox>
         <Button Grid.Row="2"  Content="Reset Reconstruction" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10 10 0 10" Name="buttonResetReconstruction"  Click="ButtonResetReconstructionClick" />
-    <CheckBox Grid.Row="2" Content="Capture Color" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 10 10 10" Name="checkBoxCaptureColor" Checked="CheckBoxCaptureColor" Unchecked="CheckBoxCaptureColor"/>
         <StatusBar Grid.Row="3" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White">
             <StatusBarItem Padding="0 0 0 10">
                 <TextBlock Name="statusBarText"></TextBlock>
             </StatusBarItem>
         </StatusBar>
-    <Button Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="Start" Name="Control"/>
-  </Grid>
+        <Button Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="Start" Name="Control"/>
+    </Grid>
 </Window>

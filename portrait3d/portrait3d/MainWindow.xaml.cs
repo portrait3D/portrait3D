@@ -4,7 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Samples.Kinect.KinectFusionColorBasics
+namespace Portrait3D
 {
     using System;
     using System.Diagnostics;
@@ -521,9 +521,6 @@ namespace Microsoft.Samples.Kinect.KinectFusionColorBasics
             this.mappedColorPixels = new int[depthImageArraySize];
 
             this.sensor.DepthStream.Range = DepthRange.Default;
-
-            this.captureColor = this.checkBoxCaptureColor.IsChecked.GetValueOrDefault();
-
         }
 
         /// <summary>
@@ -853,30 +850,6 @@ namespace Microsoft.Samples.Kinect.KinectFusionColorBasics
             this.statusBarText.Text = Properties.Resources.ResetReconstruction;
         }
 
-        /// <summary>
-        /// Handles the checking or un-checking of the capture color check box
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void CheckBoxCaptureColor(object sender, RoutedEventArgs e)
-        {
-            if (!this.isRunning)
-            {
-                if (this.checkBoxCaptureColor.IsChecked.GetValueOrDefault())
-                {
-                    this.captureColor = true;
-                }
-                else
-                {
-                    this.captureColor = false;
-                }
-            }
-            else
-            {
-                this.checkBoxCaptureColor.IsChecked = this.captureColor;
-            }
-        }
-
         private void Start(object sender, RoutedEventArgs e)
         {
             if (this.isRunning)
@@ -934,9 +907,6 @@ namespace Microsoft.Samples.Kinect.KinectFusionColorBasics
 
                     return;
                 }
-
-
-                this.checkBoxCaptureColor.IsChecked = this.captureColor;
 
                 // Initialize and start the FPS timer
                 this.fpsTimer = new DispatcherTimer();

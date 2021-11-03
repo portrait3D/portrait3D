@@ -4,7 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Samples.Kinect.KinectFusionColorBasics
+namespace Portrait3D
 {
     using System.Windows;
 
