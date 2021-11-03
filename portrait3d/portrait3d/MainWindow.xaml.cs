@@ -684,7 +684,7 @@ namespace Portrait3D
 
         private void Export(object sender, RoutedEventArgs e)
         {
-            Exporter.ExportToFile(this.volume.CalculateMesh(1));
+            Exporter.ExportMeshToFile(this.volume.CalculateMesh(1));
         }
     }
 }

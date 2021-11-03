@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Portrait3D
 {
@@ -217,38 +214,43 @@ namespace Portrait3D
             }
         }
 
-        public static void ExportToFile(Mesh mesh)
+
+        /// <summary>
+        /// Generates a save file dialog and saves based on the extension selected.
+        /// </summary>
+        /// <param name="mesh">Calculated mesh object</param>
+        public static void ExportMeshToFile(Mesh mesh)
         {
             Stream stream;
-
             SaveFileDialog saveFileDialog = new SaveFileDialog();
 
+            //Set our save dialog properties
             saveFileDialog.FileName = "Export.stl";
             saveFileDialog.Filter = "STL file (*.stl)|*.stl|OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply|";
             saveFileDialog.DefaultExt = "stl";
             saveFileDialog.AddExtension = true;
 
             bool? cond = saveFileDialog.ShowDialog();
-
             if (cond.HasValue ? cond.Value : false)
             {
                 if ((stream = saveFileDialog.OpenFile()) != null)
                 {
+                    //Fetch file extension
                     string extension = saveFileDialog.SafeFileName.Split('.')[1];
-                    StreamWriter sw = new StreamWriter(stream);
 
+                    //Write per file extension
                     switch (extension)
                     {
                         case "stl":
-                            SaveAsciiObjMesh(mesh, sw, false);
+                            SaveBinaryStlMesh(mesh, new BinaryWriter(stream), false);
                             break;
 
                         case "obj":
-                            SaveAsciiObjMesh(mesh, sw, false);
+                            SaveAsciiObjMesh(mesh, new StreamWriter(stream), false);
                             break;
 
                         case "ply":
-                            SaveAsciiPlyMesh(mesh, sw, false);
+                            SaveAsciiPlyMesh(mesh, new StreamWriter(stream), false);
                             break;
 
                         default:
