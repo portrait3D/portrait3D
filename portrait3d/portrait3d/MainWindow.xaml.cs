@@ -189,11 +189,6 @@ namespace Portrait3D
         private bool disposed;
 
         /// <summary>
-        /// Kinect color mapped into depth frame
-        /// </summary>
-        private FusionColorImageFrame mappedColorFrame;
-
-        /// <summary>
         /// Mapped color pixels in depth frame of reference
         /// </summary>
         private int[] mappedColorPixels;
@@ -249,11 +244,6 @@ namespace Portrait3D
                 if (null != this.depthFloatBuffer)
                 {
                     this.depthFloatBuffer.Dispose();
-                }
-
-                if (null != this.mappedColorFrame)
-                {
-                    this.mappedColorFrame.Dispose();
                 }
 
                 if (null != this.pointCloudBuffer)
@@ -616,24 +606,9 @@ namespace Portrait3D
                 {
                     this.volume.ResetReconstruction(this.worldToCameraTransform);
                 }
-
-                this.ResetColorImage();
             }
 
             this.ResetFps();
-        }
-
-        /// <summary>
-        /// Reset the mapped color image on reset or re-create of volume
-        /// </summary>
-        private void ResetColorImage()
-        {
-            if (null != this.mappedColorFrame && null != this.mappedColorPixels)
-            {
-                // Clear the mapped color image
-                Array.Clear(this.mappedColorPixels, 0, this.mappedColorPixels.Length);
-                this.mappedColorFrame.CopyPixelDataFrom(this.mappedColorPixels);
-            }
         }
 
         /// <summary>
