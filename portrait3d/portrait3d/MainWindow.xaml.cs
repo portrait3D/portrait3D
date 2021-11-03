@@ -24,17 +24,6 @@ namespace Portrait3D
     public partial class MainWindow : Window, IDisposable
     {
         /// <summary>
-        /// Max tracking error count, we will reset the reconstruction if tracking errors
-        /// reach this number
-        /// </summary>
-        private const int MaxTrackingErrors = 100;
-
-        /// <summary>
-        /// If set true, will automatically reset the reconstruction when MaxTrackingErrors have occurred
-        /// </summary>
-        private const bool AutoResetReconstructionWhenLost = false;
-
-        /// <summary>
         /// The resolution of the depth image to be processed.
         /// </summary>
         private const DepthImageFormat DepthFormat = DepthImageFormat.Resolution640x480Fps30;
@@ -133,11 +122,6 @@ namespace Portrait3D
         private DepthImagePixel[] depthImagePixels;
 
         /// <summary>
-        /// Intermediate storage for the color data received from the camera in 32bit color
-        /// </summary>
-        private byte[] colorImagePixels;
-
-        /// <summary>
         /// Intermediate storage for the depth data converted to color
         /// </summary>
         private int[] colorPixels;
@@ -170,7 +154,7 @@ namespace Portrait3D
         /// <summary>
         /// The Kinect Fusion volume, enabling color reconstruction
         /// </summary>
-        private ColorReconstruction volume;
+        private Reconstruction volume;
 
         /// <summary>
         /// The timer to calculate FPS
@@ -187,10 +171,7 @@ namespace Portrait3D
         /// </summary>
         private int processedFrameCount;
 
-        /// <summary>
-        /// The tracking error count
-        /// </summary>
-        private int trackingErrorCount;
+        private int totalFrameCount;
 
         /// <summary>
         /// The sensor depth frame data length
@@ -208,29 +189,14 @@ namespace Portrait3D
         private bool disposed;
 
         /// <summary>
-        /// Capture, integrate and display color when true
-        /// </summary>
-        private bool captureColor = true;
-
-        /// <summary>
         /// Kinect color mapped into depth frame
         /// </summary>
         private FusionColorImageFrame mappedColorFrame;
 
         /// <summary>
-        /// Mapping of depth pixels into color image
-        /// </summary>
-        private ColorImagePoint[] colorCoordinates;
-
-        /// <summary>
         /// Mapped color pixels in depth frame of reference
         /// </summary>
         private int[] mappedColorPixels;
-
-        /// <summary>
-        /// The coordinate mapper to convert between depth and color frames of reference
-        /// </summary>
-        private CoordinateMapper mapper;
 
         /// <summary>
         /// Image Width of depth frame
@@ -241,16 +207,6 @@ namespace Portrait3D
         /// Image height of depth frame
         /// </summary>
         private int depthHeight = 0;
-
-        /// <summary>
-        /// Image width of color frame
-        /// </summary>
-        private int colorWidth = 0;
-
-        /// <summary>
-        /// Image height of color frame
-        /// </summary>
-        private int colorHeight = 0;
 
         private bool isRunning = false;
 
@@ -342,40 +298,6 @@ namespace Portrait3D
         }
 
         /// <summary>
-        /// Get the color image size from the input color image format.
-        /// </summary>
-        /// <param name="imageFormat">The color image format.</param>
-        /// <returns>The width and height of the input color image format.</returns>
-        private static Size GetImageSize(ColorImageFormat imageFormat)
-        {
-            switch (imageFormat)
-            {
-                case ColorImageFormat.RgbResolution640x480Fps30:
-                    return new Size(640, 480);
-
-                case ColorImageFormat.RgbResolution1280x960Fps12:
-                    return new Size(1280, 960);
-
-                case ColorImageFormat.InfraredResolution640x480Fps30:
-                    return new Size(640, 480);
-
-                case ColorImageFormat.RawBayerResolution1280x960Fps12:
-                    return new Size(1280, 960);
-
-                case ColorImageFormat.RawBayerResolution640x480Fps30:
-                    return new Size(640, 480);
-
-                case ColorImageFormat.RawYuvResolution640x480Fps15:
-                    return new Size(640, 480);
-
-                case ColorImageFormat.YuvResolution640x480Fps15:
-                    return new Size(640, 480);
-            }
-
-            throw new ArgumentOutOfRangeException("imageFormat");
-        }
-
-        /// <summary>
         /// Execute startup tasks
         /// </summary>
         /// <param name="sender">object sending the event</param>
@@ -435,13 +357,8 @@ namespace Portrait3D
             this.depthWidth = (int)depthImageSize.Width;
             this.depthHeight = (int)depthImageSize.Height;
 
-            Size colorImageSize = GetImageSize(ColorFormat);
-            this.colorWidth = (int)colorImageSize.Width;
-            this.colorHeight = (int)colorImageSize.Height;
-
-            // Turn on the depth and color streams to receive frames
+            // Turn on the depth stream to receive frames
             this.sensor.DepthStream.Enable(DepthFormat);
-            this.sensor.ColorStream.Enable(ColorFormat);
 
             this.frameDataLength = this.sensor.DepthStream.FramePixelDataLength;
 
@@ -460,8 +377,8 @@ namespace Portrait3D
             // Set the image we display to point to the bitmap where we'll put the image data
             this.Image.Source = this.colorBitmap;
 
-            // Add an event handler to be called whenever depth and color both have new data
-            this.sensor.AllFramesReady += this.SensorFramesReady;
+            // Add an event handler to be called whenever depth has new data
+            this.sensor.DepthFrameReady += this.SensorFramesReady;
 
             var volParam = new ReconstructionParameters(VoxelsPerMeter, VoxelResolutionX, VoxelResolutionY, VoxelResolutionZ);
 
@@ -472,7 +389,7 @@ namespace Portrait3D
             {
                 // This creates a volume cube with the Kinect at center of near plane, and volume directly
                 // in front of Kinect.
-                this.volume = ColorReconstruction.FusionCreateReconstruction(volParam, ProcessorType, DeviceToUse, this.worldToCameraTransform);
+                this.volume = Reconstruction.FusionCreateReconstruction(volParam, ProcessorType, DeviceToUse, this.worldToCameraTransform);
 
                 this.defaultWorldToVolumeTransform = this.volume.GetCurrentWorldToVolumeTransform();
 
@@ -496,9 +413,6 @@ namespace Portrait3D
             // Depth frames generated from the depth input
             this.depthFloatBuffer = new FusionFloatImageFrame(this.depthWidth, this.depthHeight);
 
-            // Allocate color frame for color data from Kinect mapped into depth frame
-            this.mappedColorFrame = new FusionColorImageFrame(this.depthWidth, this.depthHeight);
-
             // Point cloud frames generated from the depth float input
             this.pointCloudBuffer = new FusionPointCloudImageFrame(this.depthWidth, this.depthHeight);
 
@@ -506,16 +420,9 @@ namespace Portrait3D
             this.shadedSurfaceColorFrame = new FusionColorImageFrame(this.depthWidth, this.depthHeight);
 
             int depthImageArraySize = this.depthWidth * this.depthHeight;
-            int colorImageArraySize = this.colorWidth * this.colorHeight * sizeof(int);
 
             // Create local depth pixels buffer
             this.depthImagePixels = new DepthImagePixel[depthImageArraySize];
-
-            // Create local color pixels buffer
-            this.colorImagePixels = new byte[colorImageArraySize];
-
-            // Allocate the depth-color mapping points
-            this.colorCoordinates = new ColorImagePoint[depthImageArraySize];
 
             // Allocate mapped color points (i.e. color in depth frame of reference)
             this.mappedColorPixels = new int[depthImageArraySize];
@@ -559,6 +466,7 @@ namespace Portrait3D
 
             // Reset frame counter
             this.processedFrameCount = 0;
+            this.totalFrameCount = 0;
             this.lastFPSTimestamp = DateTime.UtcNow;
         }
 
@@ -576,6 +484,7 @@ namespace Portrait3D
 
             // Reset frame counter
             this.processedFrameCount = 0;
+            this.totalFrameCount = 0;
             this.lastFPSTimestamp = DateTime.UtcNow;
         }
 
@@ -584,20 +493,12 @@ namespace Portrait3D
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        private void SensorFramesReady(object sender, AllFramesReadyEventArgs e)
+        private void SensorFramesReady(object sender, DepthImageFrameReadyEventArgs e)
         {
+            this.totalFrameCount++;
             // Here we will drop a frame if we are still processing the last one
             if (!this.processingFrame)
             {
-                using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
-                {
-                    if (null != colorFrame)
-                    {
-                        // Copy color pixels from the image to a buffer
-                        colorFrame.CopyPixelDataTo(this.colorImagePixels);
-                    }
-                }
-
                 using (DepthImageFrame depthFrame = e.OpenDepthImageFrame())
                 {
                     if (depthFrame != null)
@@ -636,36 +537,17 @@ namespace Portrait3D
                 // ProcessFrame will first calculate the camera pose and then integrate
                 // if tracking is successful
                 bool trackingSucceeded = false;
-                bool integrateColor = this.processedFrameCount % ColorIntegrationInterval == 0;
-
-                if (this.captureColor && integrateColor)
-                {
-                    this.MapColorToDepth();
-
-                    trackingSucceeded = this.volume.ProcessFrame(
-                        this.depthFloatBuffer,
-                        this.mappedColorFrame,
-                        FusionDepthProcessor.DefaultAlignIterationCount,
-                        FusionDepthProcessor.DefaultIntegrationWeight,
-                        FusionDepthProcessor.DefaultColorIntegrationOfAllAngles,
-                        this.volume.GetCurrentWorldToCameraTransform());
-                }
-                else
-                {
-                    trackingSucceeded = this.volume.ProcessFrame(
-                        this.depthFloatBuffer,
-                        FusionDepthProcessor.DefaultAlignIterationCount,
-                        FusionDepthProcessor.DefaultIntegrationWeight,
-                        this.volume.GetCurrentWorldToCameraTransform());
-                }
+                trackingSucceeded = this.volume.ProcessFrame(
+                    this.depthFloatBuffer,
+                    FusionDepthProcessor.DefaultAlignIterationCount,
+                    FusionDepthProcessor.DefaultIntegrationWeight,
+                    this.volume.GetCurrentWorldToCameraTransform());
 
                 // If camera tracking failed, no data integration or raycast for reference
                 // point cloud will have taken place, and the internal camera pose
                 // will be unchanged.
                 if (!trackingSucceeded)
                 {
-                    this.trackingErrorCount++;
-
                     // Show tracking error on status bar
                     this.statusBarText.Text = Properties.Resources.CameraTrackingFailed;
                 }
@@ -675,32 +557,13 @@ namespace Portrait3D
                      
                     // Set the camera pose and reset tracking errors
                     this.worldToCameraTransform = calculatedCameraPose;
-                    this.trackingErrorCount = 0;
                 }
+                // Calculate the point cloud
+                this.volume.CalculatePointCloud(this.pointCloudBuffer, this.worldToCameraTransform);
 
-                if (AutoResetReconstructionWhenLost && !trackingSucceeded && this.trackingErrorCount == MaxTrackingErrors)
-                {
-                    // Auto Reset due to bad tracking
-                    this.statusBarText.Text = Properties.Resources.ResetVolume;
-
-                    // Automatically Clear Volume and reset tracking if tracking fails
-                    this.ResetReconstruction();
-                }
-
-                if (this.captureColor)
-                {
-                    // Calculate the point cloud and get color surface image
-                    this.volume.CalculatePointCloud(this.pointCloudBuffer, this.shadedSurfaceColorFrame, this.worldToCameraTransform);
-                }
-                else
-                {
-                    // Calculate the point cloud
-                    this.volume.CalculatePointCloud(this.pointCloudBuffer, this.worldToCameraTransform);
-
-                    // Shade point cloud and render
-                    FusionDepthProcessor.ShadePointCloud(
-                        this.pointCloudBuffer, this.worldToCameraTransform, this.shadedSurfaceColorFrame, null);
-                }
+                // Shade point cloud and render
+                FusionDepthProcessor.ShadePointCloud(
+                    this.pointCloudBuffer, this.worldToCameraTransform, this.shadedSurfaceColorFrame, null);
 
                 this.shadedSurfaceColorFrame.CopyPixelDataTo(this.colorPixels);
 
@@ -725,69 +588,10 @@ namespace Portrait3D
         }
 
         /// <summary>
-        /// Process the color and depth inputs, converting the color into the depth space
-        /// </summary>
-        private unsafe void MapColorToDepth()
-        {
-            if (null == this.mapper)
-            {
-                // Create a coordinate mapper
-                this.mapper = new CoordinateMapper(this.sensor);
-            }
-
-            this.mapper.MapDepthFrameToColorFrame(DepthFormat, this.depthImagePixels, ColorFormat, this.colorCoordinates);
-
-            // Here we make use of unsafe code to just copy the whole pixel as an int for performance reasons, as we do
-            // not need access to the individual rgba components.
-            fixed (byte* ptrColorPixels = this.colorImagePixels)
-            {
-                int* rawColorPixels = (int*)ptrColorPixels;
-
-                // Horizontal flip the color image as the standard depth image is flipped internally in Kinect Fusion
-                // to give a viewpoint as though from behind the Kinect looking forward by default.
-                Parallel.For(
-                    0,
-                    this.depthHeight,
-                    y =>
-                        {
-                            int destIndex = y * this.depthWidth;
-                            int flippedDestIndex = destIndex + (this.depthWidth - 1); // horizontally mirrored
-
-                            for (int x = 0; x < this.depthWidth; ++x, ++destIndex, --flippedDestIndex)
-                            {
-                                // calculate index into depth array
-                                int colorInDepthX = colorCoordinates[destIndex].X;
-                                int colorInDepthY = colorCoordinates[destIndex].Y;
-
-                                // make sure the depth pixel maps to a valid point in color space
-                                if (colorInDepthX >= 0 && colorInDepthX < this.colorWidth && colorInDepthY >= 0
-                                    && colorInDepthY < this.colorHeight && depthImagePixels[destIndex].Depth != 0)
-                                {
-                                    // Calculate index into color array- this will perform a horizontal flip as well
-                                    int sourceColorIndex = colorInDepthX + (colorInDepthY * this.colorWidth);
-
-                                    // Copy color pixel
-                                    this.mappedColorPixels[flippedDestIndex] = rawColorPixels[sourceColorIndex];
-                                }
-                                else
-                                {
-                                    this.mappedColorPixels[flippedDestIndex] = 0;
-                                }
-                            }
-                        });
-            }
-
-            this.mappedColorFrame.CopyPixelDataFrom(this.mappedColorPixels);
-        }
-
-        /// <summary>
         /// Reset the reconstruction to initial value
         /// </summary>
         private void ResetReconstruction()
         {
-            // Reset tracking error counter
-            this.trackingErrorCount = 0;
-
             // Set the world-view transform to identity, so the world origin is the initial camera location.
             this.worldToCameraTransform = Matrix4.Identity;
 
