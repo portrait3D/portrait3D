@@ -14,9 +14,7 @@ namespace Portrait3D
         /// </summary>
         /// <param name="mesh">Calculated mesh object</param>
         /// <param name="writer">Binary file writer</param>
-        /// <param name="flipAxes">Flag to determine whether the Y and Z values are flipped on save,
-        /// default should be true.</param>
-        private static void SaveBinaryStlMesh(Mesh mesh, BinaryWriter writer, bool flipAxes)
+        private static void SaveBinaryStlMesh(Mesh mesh, BinaryWriter writer)
         {
             if (null == mesh || null == writer)
             {
@@ -46,16 +44,16 @@ namespace Portrait3D
                 // Write normal
                 var normal = normals[i * 3];
                 writer.Write(normal.X);
-                writer.Write(flipAxes ? -normal.Y : normal.Y);
-                writer.Write(flipAxes ? -normal.Z : normal.Z);
+                writer.Write(-normal.Y);
+                writer.Write(-normal.Z);
 
                 // Write vertices
                 for (int j = 0; j < 3; j++)
                 {
                     var vertex = vertices[(i * 3) + j];
                     writer.Write(vertex.X);
-                    writer.Write(flipAxes ? -vertex.Y : vertex.Y);
-                    writer.Write(flipAxes ? -vertex.Z : vertex.Z);
+                    writer.Write(-vertex.Y);
+                    writer.Write(-vertex.Z);
                 }
 
                 ushort attribute = 0;
@@ -68,9 +66,7 @@ namespace Portrait3D
         /// </summary>
         /// <param name="mesh">Calculated mesh object</param>
         /// <param name="writer">The text writer</param>
-        /// <param name="flipAxes">Flag to determine whether the Y and Z values are flipped on save,
-        /// default should be true.</param>
-        private static void SaveAsciiObjMesh(Mesh mesh, TextWriter writer, bool flipAxes)
+        private static void SaveAsciiObjMesh(Mesh mesh, TextWriter writer)
         {
             if (null == mesh || null == writer)
             {
@@ -98,15 +94,7 @@ namespace Portrait3D
                 var vertex = vertices[i];
 
                 string vertexString = "v " + vertex.X.ToString(CultureInfo.InvariantCulture) + " ";
-
-                if (flipAxes)
-                {
-                    vertexString += (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    vertexString += vertex.Y.ToString(CultureInfo.InvariantCulture) + " " + vertex.Z.ToString(CultureInfo.InvariantCulture);
-                }
+                vertexString += (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
 
                 writer.WriteLine(vertexString);
             }
@@ -148,10 +136,7 @@ namespace Portrait3D
         /// </summary>
         /// <param name="mesh">Calculated mesh object</param>
         /// <param name="writer">The text writer</param>
-        /// <param name="flipAxes">Flag to determine whether the Y and Z values are flipped on save,
-        /// default should be true.</param>
-        /// <param name="outputColor">Set this true to write out the surface color to the file when it has been captured.</param>
-        private static void SaveAsciiPlyMesh(Mesh mesh, TextWriter writer, bool flipAxes)
+        private static void SaveAsciiPlyMesh(Mesh mesh, TextWriter writer)
         {
             if (null == mesh || null == writer)
             {
@@ -189,15 +174,7 @@ namespace Portrait3D
                 var vertex = vertices[i];
 
                 string vertexString = vertex.X.ToString(CultureInfo.InvariantCulture) + " ";
-
-                if (flipAxes)
-                {
-                    vertexString += (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    vertexString += vertex.Y.ToString(CultureInfo.InvariantCulture) + " " + vertex.Z.ToString(CultureInfo.InvariantCulture);
-                }
+                vertexString += (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
 
                 writer.WriteLine(vertexString);
             }
@@ -242,15 +219,15 @@ namespace Portrait3D
                     switch (extension)
                     {
                         case "stl":
-                            SaveBinaryStlMesh(mesh, new BinaryWriter(stream), false);
+                            SaveBinaryStlMesh(mesh, new BinaryWriter(stream));
                             break;
 
                         case "obj":
-                            SaveAsciiObjMesh(mesh, new StreamWriter(stream), false);
+                            SaveAsciiObjMesh(mesh, new StreamWriter(stream));
                             break;
 
                         case "ply":
-                            SaveAsciiPlyMesh(mesh, new StreamWriter(stream), false);
+                            SaveAsciiPlyMesh(mesh, new StreamWriter(stream));
                             break;
 
                         default:
