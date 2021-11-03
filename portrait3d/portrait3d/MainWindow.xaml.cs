@@ -610,6 +610,11 @@ namespace Portrait3D
             this.statusBarText.Text = Properties.Resources.ResetReconstruction;
         }
 
+        /// <summary>
+        /// Handles the user clicking on the start button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void Start(object sender, RoutedEventArgs e)
         {
             if (this.isRunning)
@@ -682,6 +687,11 @@ namespace Portrait3D
             }
         }
 
+        /// <summary>
+        /// Handles the user clicking on the export model button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void Export(object sender, RoutedEventArgs e)
         {
             Exporter.ExportMeshToFile(this.volume.CalculateMesh(1));

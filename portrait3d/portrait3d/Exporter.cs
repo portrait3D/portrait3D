@@ -6,6 +6,7 @@ namespace Portrait3D
     using System.IO;
     using System.Globalization;
     using Microsoft.Win32;
+    using System.Collections.ObjectModel;
 
     class Exporter
     {
@@ -47,13 +48,15 @@ namespace Portrait3D
                 writer.Write(-normal.Y);
                 writer.Write(-normal.Z);
 
+                var centers = GetMeshXZCenters(vertices);
+
                 // Write vertices
                 for (int j = 0; j < 3; j++)
                 {
                     var vertex = vertices[(i * 3) + j];
-                    writer.Write(vertex.X);
+                    writer.Write(vertex.X - centers.Item1);
                     writer.Write(-vertex.Y);
-                    writer.Write(-vertex.Z);
+                    writer.Write(-vertex.Z + centers.Item2);
                 }
 
                 ushort attribute = 0;
@@ -83,18 +86,15 @@ namespace Portrait3D
                 throw new ArgumentException(Properties.Resources.InvalidMeshArgument);
             }
 
-            // Write the header lines
-            writer.WriteLine("#");
-            writer.WriteLine("# OBJ file created by Microsoft Kinect Fusion");
-            writer.WriteLine("#");
+            var centers = GetMeshXZCenters(vertices);
 
             // Sequentially write the 3 vertices of the triangle, for each triangle
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vertex = vertices[i];
 
-                string vertexString = "v " + vertex.X.ToString(CultureInfo.InvariantCulture) + " ";
-                vertexString += (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
+                string vertexString = "v " + (vertex.X - centers.Item1).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) + 
+                    " " + (-vertex.Z + centers.Item2).ToString(CultureInfo.InvariantCulture);
 
                 writer.WriteLine(vertexString);
             }
@@ -103,23 +103,11 @@ namespace Portrait3D
             for (int i = 0; i < normals.Count; i++)
             {
                 var normal = normals[i];
-
-                string normalString = "vn " + normal.X.ToString(CultureInfo.InvariantCulture) + " ";
-
-                if (flipAxes)
-                {
-                    normalString += (-normal.Y).ToString(CultureInfo.InvariantCulture) + " " + (-normal.Z).ToString(CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    normalString += normal.Y.ToString(CultureInfo.InvariantCulture) + " " + normal.Z.ToString(CultureInfo.InvariantCulture);
-                }
-
-                writer.WriteLine(normalString);
+                              
+                writer.WriteLine("vn " + normal.X.ToString(CultureInfo.InvariantCulture) + " " + (-normal.Y).ToString(CultureInfo.InvariantCulture) + " " + (-normal.Z).ToString(CultureInfo.InvariantCulture));
             }
 
-            // Sequentially write the 3 vertex indices of the triangle face, for each triangle
-            // Note this is typically 1-indexed in an OBJ file when using absolute referencing!
+            // Sequentially write the 3 vertex indices of the triangle face, for each triangle, starts at 1
             for (int i = 0; i < vertices.Count / 3; i++)
             {
                 string baseIndex0 = ((i * 3) + 1).ToString(CultureInfo.InvariantCulture);
@@ -168,18 +156,19 @@ namespace Portrait3D
             writer.WriteLine("property list uchar int vertex_index");
             writer.WriteLine("end_header");
 
+            var centers = GetMeshXZCenters(vertices);
+
             // Sequentially write the 3 vertices of the triangle, for each triangle
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vertex = vertices[i];
 
-                string vertexString = vertex.X.ToString(CultureInfo.InvariantCulture) + " ";
-                vertexString += (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
+                string vertexString = (vertex.X - centers.Item1).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Z + centers.Item2).ToString(CultureInfo.InvariantCulture);
 
                 writer.WriteLine(vertexString);
             }
 
-            // Sequentially write the 3 vertex indices of the triangle face, for each triangle, 0-referenced in PLY files
+            // Sequentially write the 3 vertex indices of the triangle face, for each triangle, starts at 0
             for (int i = 0; i < faces; i++)
             {
                 string baseIndex0 = (i * 3).ToString(CultureInfo.InvariantCulture);
@@ -191,6 +180,30 @@ namespace Portrait3D
             }
         }
 
+        /// <summary>
+        /// Calculates the center point of the model as the middle between the farthest X coordinates and Z coordinates
+        /// </summary>
+        /// <param name="vertex">List of vertices of the mesh</param>
+        /// <returns>A tuple with the first element being the middle point between the two farthest X coordinates 
+        /// and the second being the middle point between the two farthest Z coordinates</returns>
+        private static Tuple<float, float> GetMeshXZCenters(ReadOnlyCollection<Vector3> vertices)
+        {
+            float maxX = float.MinValue;
+            float minX = float.MaxValue;
+            float maxZ = float.MinValue;
+            float minZ = float.MaxValue;
+
+            foreach (Vector3 vertex in vertices)
+            {
+                maxX = Math.Max(maxX, vertex.X);
+                minX = Math.Min(minX, vertex.X);
+                maxZ = Math.Max(maxZ, vertex.Z);
+                minZ = Math.Min(minZ, vertex.Z);
+            }
+
+            return new Tuple<float, float>((maxX - minX) / 2.0f, (maxZ - minZ) / 2.0f);
+        }
+
 
         /// <summary>
         /// Generates a save file dialog and saves based on the extension selected.
@@ -199,16 +212,15 @@ namespace Portrait3D
         public static void ExportMeshToFile(Mesh mesh)
         {
             Stream stream;
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                FileName = "Export.stl",
+                Filter = "STL file (*.stl)|*.stl|OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply|",
+                DefaultExt = "stl",
+                AddExtension = true
+            };
 
-            //Set our save dialog properties
-            saveFileDialog.FileName = "Export.stl";
-            saveFileDialog.Filter = "STL file (*.stl)|*.stl|OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply|";
-            saveFileDialog.DefaultExt = "stl";
-            saveFileDialog.AddExtension = true;
-
-            bool? cond = saveFileDialog.ShowDialog();
-            if (cond.HasValue ? cond.Value : false)
+            if (saveFileDialog.ShowDialog() ?? false)
             {
                 if ((stream = saveFileDialog.OpenFile()) != null)
                 {
