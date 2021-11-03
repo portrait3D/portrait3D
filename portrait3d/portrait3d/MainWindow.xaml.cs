@@ -681,5 +681,10 @@ namespace Portrait3D
                 this.isRunning = !this.isRunning;
             }
         }
+
+        private void Export(object sender, RoutedEventArgs e)
+        {
+            Exporter.ExportToFile(this.volume.CalculateMesh(1));
+        }
     }
 }
