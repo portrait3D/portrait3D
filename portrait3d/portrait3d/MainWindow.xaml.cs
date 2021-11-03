@@ -9,8 +9,6 @@ namespace Portrait3D
     using System;
     using System.Diagnostics;
     using System.IO;
-    using System.Runtime.InteropServices;
-    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
@@ -29,12 +27,6 @@ namespace Portrait3D
         private const DepthImageFormat DepthFormat = DepthImageFormat.Resolution640x480Fps30;
 
         /// <summary>
-        /// Format of color frame to use - in this basic sample we are limited to use the standard 640x480 
-        /// resolution Rgb at 30fps, identical to the depth resolution.
-        /// </summary>
-        private const ColorImageFormat ColorFormat = ColorImageFormat.RgbResolution640x480Fps30;
-
-        /// <summary>
         /// The seconds interval to calculate FPS
         /// </summary>
         private const int FpsInterval = 5;
@@ -47,21 +39,21 @@ namespace Portrait3D
 
         /// <summary>
         /// The reconstruction volume voxel resolution in the X axis
-        /// At a setting of 256vpm the volume is 512 / 256 = 2m wide
+        /// At a setting of 256vpm the volume is 256 / 256 = 1m wide
         /// </summary>
-        private const int VoxelResolutionX = 512;
+        private const int VoxelResolutionX = 256;
 
         /// <summary>
         /// The reconstruction volume voxel resolution in the Y axis
-        /// At a setting of 256vpm the volume is 384 / 256 = 1.5m high
+        /// At a setting of 256vpm the volume is 128 / 256 = 1m high
         /// </summary>
-        private const int VoxelResolutionY = 384;
+        private const int VoxelResolutionY = 128;
 
         /// <summary>
         /// The reconstruction volume voxel resolution in the Z axis
-        /// At a setting of 256vpm the volume is 512 / 256 = 2m deep
+        /// At a setting of 256vpm the volume is 256 / 256 = 1m deep
         /// </summary>
-        private const int VoxelResolutionZ = 512;
+        private const int VoxelResolutionZ = 256;
 
         /// <summary>
         /// The reconstruction volume processor type. This parameter sets whether AMP or CPU processing
@@ -75,12 +67,6 @@ namespace Portrait3D
         /// Here we automatically choose a device to use for processing by passing -1, 
         /// </summary>
         private const int DeviceToUse = -1;
-
-        /// <summary>
-        /// The frame interval where we integrate color.
-        /// Capturing color has an associated processing cost, so we do not capture every frame here.
-        /// </summary>
-        private const int ColorIntegrationInterval = 2;
 
         /// <summary>
         /// Parameter to translate the reconstruction based on the minimum depth setting. When set to
@@ -187,11 +173,6 @@ namespace Portrait3D
         /// Track whether Dispose has been called
         /// </summary>
         private bool disposed;
-
-        /// <summary>
-        /// Mapped color pixels in depth frame of reference
-        /// </summary>
-        private int[] mappedColorPixels;
 
         /// <summary>
         /// Image Width of depth frame
@@ -414,9 +395,6 @@ namespace Portrait3D
             // Create local depth pixels buffer
             this.depthImagePixels = new DepthImagePixel[depthImageArraySize];
 
-            // Allocate mapped color points (i.e. color in depth frame of reference)
-            this.mappedColorPixels = new int[depthImageArraySize];
-
             this.sensor.DepthStream.Range = DepthRange.Default;
         }
 
@@ -523,6 +501,9 @@ namespace Portrait3D
                     FusionDepthProcessor.DefaultMinimumDepth,
                     FusionDepthProcessor.DefaultMaximumDepth,
                     false);
+
+                // Use this to smooth each frame (check last 2 params)
+                // this.volume.SmoothDepthFloatFrame(this.depthFloatBuffer, this.depthFloatBuffer, 1, 0.1f);
 
                 // ProcessFrame will first calculate the camera pose and then integrate
                 // if tracking is successful
