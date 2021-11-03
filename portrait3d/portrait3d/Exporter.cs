@@ -1,12 +1,11 @@
 ﻿using System;
+using Microsoft.Kinect.Toolkit.Fusion;
+using System.IO;
+using System.Globalization;
+using System.Collections.ObjectModel;
 
 namespace Portrait3D
 {
-    using Microsoft.Kinect.Toolkit.Fusion;
-    using System.IO;
-    using System.Globalization;
-    using System.Collections.ObjectModel;
-
     /// <summary>
     /// Class for mesh export to file
     /// </summary>

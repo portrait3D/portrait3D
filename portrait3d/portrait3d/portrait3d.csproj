@@ -119,6 +119,7 @@
     <Compile Include="Exporter.cs" />
     <Compile Include="FPS.cs" />
     <Compile Include="DepthImageSize.cs" />
+    <Compile Include="Exporter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
