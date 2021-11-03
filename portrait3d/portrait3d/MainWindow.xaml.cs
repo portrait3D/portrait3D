@@ -204,6 +204,11 @@ namespace Portrait3D
             isRunning = !isRunning;
         }
 
+        /// <summary>
+        /// Handles the user clicking on the start/stop button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void StartStopToggle(object sender, RoutedEventArgs e)
         {
             if (isRunning)
@@ -244,6 +249,11 @@ namespace Portrait3D
 
         }
 
+        /// <summary>
+        /// Handles the user clicking on the export model button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void Export(object sender, RoutedEventArgs e)
         {
             Exporter.ExportToFile(this.volume.CalculateMesh(1));
