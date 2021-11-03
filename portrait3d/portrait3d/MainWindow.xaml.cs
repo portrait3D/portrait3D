@@ -27,11 +27,6 @@ namespace Portrait3D
         private const DepthImageFormat DepthFormat = DepthImageFormat.Resolution640x480Fps30;
 
         /// <summary>
-        /// The seconds interval to calculate FPS
-        /// </summary>
-        private const int FpsInterval = 5;
-
-        /// <summary>
         /// The reconstruction volume voxel density in voxels per meter (vpm)
         /// 1000mm / 256vpm = ~3.9mm/voxel
         /// </summary>
@@ -67,6 +62,11 @@ namespace Portrait3D
         /// Here we automatically choose a device to use for processing by passing -1, 
         /// </summary>
         private const int DeviceToUse = -1;
+
+        /// <summary>
+        /// Used to calculate the number of frames processed per second
+        /// </summary>
+        private FPS fps = new FPS(5);
 
         /// <summary>
         /// Parameter to translate the reconstruction based on the minimum depth setting. When set to
@@ -141,23 +141,6 @@ namespace Portrait3D
         /// The Kinect Fusion volume, enabling color reconstruction
         /// </summary>
         private Reconstruction volume;
-
-        /// <summary>
-        /// The timer to calculate FPS
-        /// </summary>
-        private DispatcherTimer fpsTimer;
-
-        /// <summary>
-        /// Timer stamp of last computation of FPS
-        /// </summary>
-        private DateTime lastFPSTimestamp;
-
-        /// <summary>
-        /// The count of the frames processed in the FPS interval
-        /// </summary>
-        private int processedFrameCount;
-
-        private int totalFrameCount;
 
         /// <summary>
         /// The sensor depth frame data length
@@ -405,55 +388,12 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (null != this.fpsTimer)
-            {
-                this.fpsTimer.Stop();
-            }
+            fps.Stop();
 
             if (null != this.sensor)
             {
                 this.sensor.Stop();
             }
-        }
-
-        /// <summary>
-        /// Handler for FPS timer tick
-        /// </summary>
-        /// <param name="sender">Object sending the event</param>
-        /// <param name="e">Event arguments</param>
-        private void FpsTimerTick(object sender, EventArgs e)
-        {
-            // Calculate time span from last calculation of FPS
-            double intervalSeconds = (DateTime.UtcNow - this.lastFPSTimestamp).TotalSeconds;
-
-            // Calculate and show fps on status bar
-            this.statusBarText.Text = string.Format(
-                System.Globalization.CultureInfo.InvariantCulture,
-                Properties.Resources.Fps,
-                (double)this.processedFrameCount / intervalSeconds);
-
-            // Reset frame counter
-            this.processedFrameCount = 0;
-            this.totalFrameCount = 0;
-            this.lastFPSTimestamp = DateTime.UtcNow;
-        }
-
-        /// <summary>
-        /// Reset FPS timer and counter
-        /// </summary>
-        private void ResetFps()
-        {
-            // Restart fps timer
-            if (null != this.fpsTimer)
-            {
-                this.fpsTimer.Stop();
-                this.fpsTimer.Start();
-            }
-
-            // Reset frame counter
-            this.processedFrameCount = 0;
-            this.totalFrameCount = 0;
-            this.lastFPSTimestamp = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -463,7 +403,6 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void SensorFramesReady(object sender, DepthImageFrameReadyEventArgs e)
         {
-            this.totalFrameCount++;
             // Here we will drop a frame if we are still processing the last one
             if (!this.processingFrame)
             {
@@ -546,7 +485,7 @@ namespace Portrait3D
                     0);
 
                 // The input frame was processed successfully, increase the processed frame count
-                ++this.processedFrameCount;
+                fps.AddFrame();
             }
             catch (InvalidOperationException ex)
             {
@@ -589,7 +528,7 @@ namespace Portrait3D
                 }
             }
 
-            this.ResetFps();
+            this.fps.Restart();
         }
 
         /// <summary>
@@ -610,75 +549,87 @@ namespace Portrait3D
             this.statusBarText.Text = Properties.Resources.ResetReconstruction;
         }
 
-        private void Start(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Handles fps value changed
+        /// </summary>
+        /// <param name="sender">Object sending the event</param>
+        /// <param name="e">Event arguments</param>
+        private void Fps_FPSChanged(object sender, EventArgs e)
+        {
+            this.statusBarText.Text = fps.ToString();
+        }
+
+        private void StartSensor()
+        {
+            // Start the sensor
+            try
+            {
+                this.sensor.Start();
+                this.sensor.ElevationAngle = 10;
+            }
+            catch (IOException ex)
+            {
+                // Device is in use
+                this.sensor = null;
+                this.statusBarText.Text = ex.Message;
+
+                return;
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Device is not valid, not supported or hardware feature unavailable
+                this.sensor = null;
+                this.statusBarText.Text = ex.Message;
+
+                return;
+            }
+
+            fps.FPSChanged += Fps_FPSChanged;
+            fps.Start();
+
+            this.Control.Content = "Stop";
+            this.isRunning = !this.isRunning;
+        }
+
+        private void StopSensor()
+        {
+            // Stop the sensor
+            try
+            {
+                this.sensor.Stop();
+            }
+            catch (IOException ex)
+            {
+                // Device is in use
+                this.sensor = null;
+                this.statusBarText.Text = ex.Message;
+
+                return;
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Device is not valid, not supported or hardware feature unavailable
+                this.sensor = null;
+                this.statusBarText.Text = ex.Message;
+
+                return;
+            }
+
+            fps.Stop();
+
+            this.Control.Content = "Start";
+            this.isRunning = !this.isRunning;
+        }
+
+        private void StartStopToggle(object sender, RoutedEventArgs e)
         {
             if (this.isRunning)
             {
-                try
-                {
-                    this.sensor.Stop();
-                }
-                catch (IOException ex)
-                {
-                    // Device is in use
-                    this.sensor = null;
-                    this.statusBarText.Text = ex.Message;
-
-                    return;
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // Device is not valid, not supported or hardware feature unavailable
-                    this.sensor = null;
-                    this.statusBarText.Text = ex.Message;
-
-                    return;
-                }
-
-                this.fpsTimer.Stop();
-                this.fpsTimer = null;
-
-                this.lastFPSTimestamp = DateTime.MinValue;
-
-                this.Control.Content = "Start";
-                this.isRunning = !this.isRunning;
+                this.StopSensor();
             }
             else
             {
-                // Start the sensor!
-                try
-                {
-                    this.sensor.Start();
-                    this.sensor.ElevationAngle = 10;
-                }
-                catch (IOException ex)
-                {
-                    // Device is in use
-                    this.sensor = null;
-                    this.statusBarText.Text = ex.Message;
-
-                    return;
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // Device is not valid, not supported or hardware feature unavailable
-                    this.sensor = null;
-                    this.statusBarText.Text = ex.Message;
-
-                    return;
-                }
-
-                // Initialize and start the FPS timer
-                this.fpsTimer = new DispatcherTimer();
-                this.fpsTimer.Tick += new EventHandler(this.FpsTimerTick);
-                this.fpsTimer.Interval = new TimeSpan(0, 0, FpsInterval);
-
-                this.fpsTimer.Start();
-
-                this.lastFPSTimestamp = DateTime.UtcNow;
-
-                this.Control.Content = "Stop";
-                this.isRunning = !this.isRunning;
+                this.StartSensor();
             }
         }
     }
