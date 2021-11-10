@@ -14,7 +14,7 @@
         <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
             <Image Name="Image" Width="640" Height="480"/>
         </Viewbox>
-        <Button Name="control" Content="Start" Click="ControlStartStop" Grid.Row="2" Margin="10,10,0,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
+        <Button Name="control" Content="Start" Click="StartStopToggle" Grid.Row="2" Margin="10,10,0,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
         <Label Name="precisionText" Content="Précision" Grid.Row="2" Margin="102,7,0,0"  Height="23" VerticalAlignment="Top" HorizontalAlignment="Left" Width="58"/>
         <xctk:IntegerUpDown Name="precisionValue" FormatString="N0" Value="2" Minimum="1" Maximum="5" Increment="1" ValueChanged="changedValue" Grid.Row="2" Margin="160,10,0,0"  Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="48"/>
         <Button Name="export" Content="Export model" Click="Export" IsEnabled="False" Grid.Row="2" Margin="0,10,338,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="105"/>

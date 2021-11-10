@@ -186,7 +186,7 @@ namespace Portrait3D
             fps.Start();
 
             Control.Content = "Stop";
-            isRunning = !isRunning;
+            isRunning = !isRunning;5
         }
 
         private void StopSensor()
@@ -247,16 +247,6 @@ namespace Portrait3D
         private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
 
-        }
-
-        /// <summary>
-        /// Handles the user clicking on the export model button
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void Export(object sender, RoutedEventArgs e)
-        {
-            Exporter.ExportToFile(this.volume.CalculateMesh(1));
         }
     }
 }

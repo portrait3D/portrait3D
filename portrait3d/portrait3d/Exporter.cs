@@ -3,6 +3,7 @@ using Microsoft.Kinect.Toolkit.Fusion;
 using System.IO;
 using System.Globalization;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace Portrait3D
 {
