@@ -9,6 +9,8 @@ namespace Portrait3D
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
@@ -590,6 +592,12 @@ namespace Portrait3D
             }
 
             this.ResetFps();
+
+            this.colorBitmap.WritePixels(
+                new Int32Rect(0, 0, this.colorBitmap.PixelWidth, this.colorBitmap.PixelHeight),
+                new int[this.frameDataLength],
+                this.colorBitmap.PixelWidth * sizeof(int),
+                0);
         }
 
         /// <summary>
@@ -608,6 +616,7 @@ namespace Portrait3D
             // reset the reconstruction and update the status text
             this.ResetReconstruction();
             this.statusBarText.Text = Properties.Resources.ResetReconstruction;
+            this.export.IsEnabled = false;
         }
 
         /// <summary>
@@ -645,7 +654,7 @@ namespace Portrait3D
 
                 this.lastFPSTimestamp = DateTime.MinValue;
 
-                this.Control.Content = "Start";
+                this.control.Content = "Start";
                 this.isRunning = !this.isRunning;
             }
             else
@@ -682,9 +691,11 @@ namespace Portrait3D
 
                 this.lastFPSTimestamp = DateTime.UtcNow;
 
-                this.Control.Content = "Stop";
+                this.control.Content = "Stop";
                 this.isRunning = !this.isRunning;
             }
+
+            this.export.IsEnabled = true;
         }
 
         /// <summary>
@@ -694,7 +705,20 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void Export(object sender, RoutedEventArgs e)
         {
-            Exporter.ExportMeshToFile(this.volume.CalculateMesh(1));
+            Task.Factory.StartNew(() => Exporter.ExportMeshToFile(volume.CalculateMesh(1)));
         }
+
+        /// <summary>
+        /// Handles the user clicking the open export folder button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void OpenExportFolder(object sender, RoutedEventArgs e)
+        {
+            Exporter.CreateExportFolderIfInexistant();
+            Process.Start(Exporter.DirectoryPath);
+        }
+
+
     }
 }

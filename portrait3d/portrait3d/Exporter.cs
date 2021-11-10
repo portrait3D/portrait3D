@@ -6,6 +6,7 @@ namespace Portrait3D
     using System.IO;
     using System.Globalization;
     using System.Collections.ObjectModel;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Class for mesh export to file
@@ -13,7 +14,7 @@ namespace Portrait3D
     class Exporter
     {
         // Name of the file containing the next name to use for the next export file
-        private const string DirectoryPath = "..\\..\\..\\";
+        public const string DirectoryPath = "..\\..\\..\\Portraits\\";
         private const string ExportNameFileName = "exportName.txt";
 
         /// <summary>
@@ -101,7 +102,11 @@ namespace Portrait3D
         /// <param name="mesh">Calculated mesh object</param>
         public static void ExportMeshToFile(Mesh mesh)
         {
-            string exportFileName = File.Exists(DirectoryPath + ExportNameFileName) ? File.ReadAllText(DirectoryPath + ExportNameFileName) : "0";
+            CreateExportFolderIfInexistant();
+            string fileNamePath = DirectoryPath + ExportNameFileName;
+            if (!File.Exists(fileNamePath))
+                File.WriteAllText(fileNamePath, "0");
+            string exportFileName = File.ReadAllText(fileNamePath);
             exportFileName = (int.Parse(exportFileName) + 1).ToString();
 
             Stream stream = File.OpenWrite(DirectoryPath + exportFileName + ".obj");
@@ -110,7 +115,18 @@ namespace Portrait3D
             SaveAsciiObjMesh(mesh, streamWriter);
             streamWriter.Close();
 
-            File.WriteAllText(DirectoryPath + ExportNameFileName, exportFileName);
+            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
+            File.WriteAllText(fileNamePath, exportFileName);
+            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
+        }
+
+        /// <summary>
+        /// Method that creates the location for export files if inexistant
+        /// </summary>
+        public static void CreateExportFolderIfInexistant()
+        {
+            if (!Directory.Exists(DirectoryPath))
+                Directory.CreateDirectory(DirectoryPath);
         }
     }
 }
