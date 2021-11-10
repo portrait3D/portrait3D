@@ -8,62 +8,11 @@ namespace Portrait3D
     using Microsoft.Win32;
     using System.Collections.ObjectModel;
 
+    /// <summary>
+    /// Class for mesh export to file
+    /// </summary>
     class Exporter
     {
-        /// <summary>
-        /// Save mesh in binary .STL file
-        /// </summary>
-        /// <param name="mesh">Calculated mesh object</param>
-        /// <param name="writer">Binary file writer</param>
-        private static void SaveBinaryStlMesh(Mesh mesh, BinaryWriter writer)
-        {
-            if (null == mesh || null == writer)
-            {
-                return;
-            }
-
-            var vertices = mesh.GetVertices();
-            var normals = mesh.GetNormals();
-            var indices = mesh.GetTriangleIndexes();
-
-            // Check mesh arguments
-            if (0 == vertices.Count || 0 != vertices.Count % 3 || vertices.Count != indices.Count)
-            {
-                throw new ArgumentException(Properties.Resources.InvalidMeshArgument);
-            }
-
-            char[] header = new char[80];
-            writer.Write(header);
-
-            // Write number of triangles
-            int triangles = vertices.Count / 3;
-            writer.Write(triangles);
-
-            // Sequentially write the normal, 3 vertices of the triangle and attribute, for each triangle
-            for (int i = 0; i < triangles; i++)
-            {
-                // Write normal
-                var normal = normals[i * 3];
-                writer.Write(normal.X);
-                writer.Write(-normal.Y);
-                writer.Write(-normal.Z);
-
-                var centers = GetMeshXZCenters(vertices);
-
-                // Write vertices
-                for (int j = 0; j < 3; j++)
-                {
-                    var vertex = vertices[(i * 3) + j];
-                    writer.Write(vertex.X - centers.Item1);
-                    writer.Write(-vertex.Y);
-                    writer.Write(-vertex.Z + centers.Item2);
-                }
-
-                ushort attribute = 0;
-                writer.Write(attribute);
-            }
-        }
-
         /// <summary>
         /// Save mesh in ASCII Wavefront .OBJ file
         /// </summary>
@@ -215,8 +164,8 @@ namespace Portrait3D
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 FileName = "Export.stl",
-                Filter = "STL file (*.stl)|*.stl|OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply",
-                DefaultExt = "stl",
+                Filter = "OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply",
+                DefaultExt = "obj",
                 AddExtension = true
             };
 
@@ -230,10 +179,6 @@ namespace Portrait3D
                     //Write per file extension
                     switch (extension)
                     {
-                        case "stl":
-                            SaveBinaryStlMesh(mesh, new BinaryWriter(stream));
-                            break;
-
                         case "obj":
                             SaveAsciiObjMesh(mesh, new StreamWriter(stream));
                             break;
