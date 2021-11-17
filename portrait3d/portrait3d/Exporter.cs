@@ -215,7 +215,7 @@ namespace Portrait3D
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 FileName = "Export.stl",
-                Filter = "STL file (*.stl)|*.stl|OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply|",
+                Filter = "STL file (*.stl)|*.stl|OBJ file (*.obj)|*.obj|PLY file (*.ply)|*.ply",
                 DefaultExt = "stl",
                 AddExtension = true
             };
