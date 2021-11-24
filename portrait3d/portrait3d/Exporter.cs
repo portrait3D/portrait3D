@@ -46,9 +46,10 @@ namespace Portrait3D
             {
                 var vertex = vertices[i];
 
-                string vertexString = "v " + (vertex.X - centers.Item1).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) + 
-                    " " + (-vertex.Z + centers.Item2).ToString(CultureInfo.InvariantCulture);
-
+                // string vertexString = "v " + (vertex.X - centers.Item1).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) + 
+                //    " " + (-vertex.Z + centers.Item2).ToString(CultureInfo.InvariantCulture);
+                string vertexString = "v " + (vertex.X).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) +
+                    " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
                 writer.WriteLine(vertexString);
             }
 
@@ -73,7 +74,7 @@ namespace Portrait3D
         }
 
         /// <summary>
-        /// Calculates the center point of the model as the middle between the farthest X coordinates and Z coordinates
+        /// Calculates the center point of the model as the middle between the X coordinates and Z coordinates
         /// </summary>
         /// <param name="vertex">List of vertices of the mesh</param>
         /// <returns>A tuple with the first element being the middle point between the two farthest X coordinates 
@@ -93,7 +94,7 @@ namespace Portrait3D
                 minZ = Math.Min(minZ, vertex.Z);
             }
 
-            return new Tuple<float, float>((maxX - minX) / 2.0f, (maxZ - minZ) / 2.0f);
+            return new Tuple<float, float>((maxX - minX) / 2.0f + minX, (maxZ - minZ) / 2.0f + minZ);
         }
 
         /// <summary>
@@ -107,6 +108,10 @@ namespace Portrait3D
             if (!File.Exists(fileNamePath))
                 File.WriteAllText(fileNamePath, "0");
             string exportFileName = File.ReadAllText(fileNamePath);
+            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
+            File.WriteAllText(fileNamePath, exportFileName);
+            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
+
             exportFileName = (int.Parse(exportFileName) + 1).ToString();
 
             Stream stream = File.OpenWrite(DirectoryPath + exportFileName + ".obj");
@@ -115,9 +120,7 @@ namespace Portrait3D
             SaveAsciiObjMesh(mesh, streamWriter);
             streamWriter.Close();
 
-            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
-            File.WriteAllText(fileNamePath, exportFileName);
-            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
+           
         }
 
         /// <summary>
