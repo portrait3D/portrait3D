@@ -723,7 +723,5 @@ namespace Portrait3D
             Exporter.CreateExportFolderIfInexistant();
             Process.Start(Exporter.DirectoryPath);
         }
-
-
     }
 }

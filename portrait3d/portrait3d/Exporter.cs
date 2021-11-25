@@ -6,7 +6,6 @@ namespace Portrait3D
     using System.IO;
     using System.Globalization;
     using System.Collections.ObjectModel;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// Class for mesh export to file
@@ -48,8 +47,8 @@ namespace Portrait3D
 
                 // string vertexString = "v " + (vertex.X - centers.Item1).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) + 
                 //    " " + (-vertex.Z + centers.Item2).ToString(CultureInfo.InvariantCulture);
-                string vertexString = "v " + (vertex.X).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) +
-                    " " + (-vertex.Z).ToString(CultureInfo.InvariantCulture);
+                string vertexString = "v " + (vertex.X + centers[0]).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y - centers[1]).ToString(CultureInfo.InvariantCulture) +
+                    " " + (-vertex.Z + centers[2]).ToString(CultureInfo.InvariantCulture);
                 writer.WriteLine(vertexString);
             }
 
@@ -74,15 +73,16 @@ namespace Portrait3D
         }
 
         /// <summary>
-        /// Calculates the center point of the model as the middle between the X coordinates and Z coordinates
+        /// Calculates the center point of the model as a list of X, Y and Z coordinates
         /// </summary>
-        /// <param name="vertex">List of vertices of the mesh</param>
-        /// <returns>A tuple with the first element being the middle point between the two farthest X coordinates 
-        /// and the second being the middle point between the two farthest Z coordinates</returns>
-        private static Tuple<float, float> GetMeshXZCenters(ReadOnlyCollection<Vector3> vertices)
+        /// <param name="vertices">List of vertices of the mesh</param>
+        /// <returns>Float list of the middle points between the farthest Xs, Ys and Zs</returns>
+        private static float[] GetMeshXZCenters(ReadOnlyCollection<Vector3> vertices)
         {
             float maxX = float.MinValue;
             float minX = float.MaxValue;
+            float maxY = float.MinValue;
+            float minY = float.MaxValue;
             float maxZ = float.MinValue;
             float minZ = float.MaxValue;
 
@@ -90,11 +90,13 @@ namespace Portrait3D
             {
                 maxX = Math.Max(maxX, vertex.X);
                 minX = Math.Min(minX, vertex.X);
+                maxY = Math.Max(maxY, vertex.Y);
+                minY = Math.Min(minY, vertex.Y);
                 maxZ = Math.Max(maxZ, vertex.Z);
                 minZ = Math.Min(minZ, vertex.Z);
             }
 
-            return new Tuple<float, float>((maxX - minX) / 2.0f + minX, (maxZ - minZ) / 2.0f + minZ);
+            return new float[] { (maxX - minX) / 2.0f + minX, (maxY - minY) / 2.0f + minY, (maxZ - minZ) / 2.0f + minZ };
         }
 
         /// <summary>
@@ -119,8 +121,6 @@ namespace Portrait3D
 
             SaveAsciiObjMesh(mesh, streamWriter);
             streamWriter.Close();
-
-           
         }
 
         /// <summary>
