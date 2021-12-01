@@ -126,6 +126,9 @@
   <data name="Fps" xml:space="preserve">
     <value>Fps: {0:0.00}</value>
   </data>
+  <data name="InvalidMeshArgument" xml:space="preserve">
+    <value>Invalid Mesh</value>
+  </data>
   <data name="MagnitudeCheckFailed" xml:space="preserve">
     <value>Kinect Fusion camera tracking failed in transform magnitude check.</value>
   </data>

@@ -91,7 +91,7 @@ namespace Portrait3D
         /// <summary>
         /// The Kinect Fusion volume, enabling color reconstruction
         /// </summary>
-        private Reconstruction volume;
+        public Reconstruction Volume { get; private set; }
 
         /// <summary>
         /// The count of the depth frames to be processed
@@ -167,9 +167,9 @@ namespace Portrait3D
             {
                 // This creates a volume cube with the Kinect at center of near plane, and volume directly
                 // in front of Kinect.
-                volume = Reconstruction.FusionCreateReconstruction(volParam, ProcessorType, DeviceToUse, worldToCameraTransform);
+                Volume = Reconstruction.FusionCreateReconstruction(volParam, ProcessorType, DeviceToUse, worldToCameraTransform);
 
-                defaultWorldToVolumeTransform = volume.GetCurrentWorldToVolumeTransform();
+                defaultWorldToVolumeTransform = Volume.GetCurrentWorldToVolumeTransform();
 
                 if (translateResetPoseByMinDepthThreshold)
                 {
@@ -206,8 +206,8 @@ namespace Portrait3D
         /// <summary>
         /// Check to ensure suitable DirectX11 compatible hardware exists before initializing Kinect Fusion
         /// </summary>
-        /// <returns>null if found, error message otherwise</returns>
-        public static string? VerifySuitableDirect11CompatibleHardwareExists()
+        /// <returns>Empty string if found, error message otherwise</returns>
+        public static string VerifySuitableDirect11CompatibleHardwareExists()
         {
             try
             {
@@ -235,7 +235,7 @@ namespace Portrait3D
                 return ex.Message;
             }
 
-            return null;
+            return string.Empty;
         }
 
         /// <summary>
@@ -246,7 +246,7 @@ namespace Portrait3D
             // Set the world-view transform to identity, so the world origin is the initial camera location.
             worldToCameraTransform = Matrix4.Identity;
 
-            if (volume != null)
+            if (Volume != null)
             {
                 // Translate the reconstruction volume location away from the world origin by an amount equal
                 // to the minimum depth threshold. This ensures that some depth signal falls inside the volume.
@@ -261,11 +261,11 @@ namespace Portrait3D
                     float minDist = (minDepthClip < maxDepthClip) ? minDepthClip : maxDepthClip;
                     worldToVolumeTransform.M43 -= minDist * voxelsPerMeter;
 
-                    volume.ResetReconstruction(worldToCameraTransform, worldToVolumeTransform);
+                    Volume.ResetReconstruction(worldToCameraTransform, worldToVolumeTransform);
                 }
                 else
                 {
-                    volume.ResetReconstruction(worldToCameraTransform);
+                    Volume.ResetReconstruction(worldToCameraTransform);
                 }
             }
         }
@@ -302,14 +302,14 @@ namespace Portrait3D
         /// <returns>null if everything is fine, an error message if error</returns>
         private void ProcessDepthData()
         {
-            Debug.Assert(volume != null, "volume should be initialized");
+            Debug.Assert(Volume != null, "volume should be initialized");
             Debug.Assert(shadedSurfaceColorFrame != null, "shaded surface should be initialized");
             Debug.Assert(ColorBitmap != null, "color bitmap should be initialized");
 
             try
             {
                 // Convert the depth image frame to depth float image frame
-                volume.DepthToDepthFloatFrame(
+                Volume.DepthToDepthFloatFrame(
                     depthImagePixels,
                     depthFloatBuffer,
                     FusionDepthProcessor.DefaultMinimumDepth,
@@ -322,11 +322,11 @@ namespace Portrait3D
                 // ProcessFrame will first calculate the camera pose and then integrate
                 // if tracking is successful
                 bool trackingSucceeded = false;
-                trackingSucceeded = volume.ProcessFrame(
+                trackingSucceeded = Volume.ProcessFrame(
                     depthFloatBuffer,
                     FusionDepthProcessor.DefaultAlignIterationCount,
                     FusionDepthProcessor.DefaultIntegrationWeight,
-                    volume.GetCurrentWorldToCameraTransform());
+                    Volume.GetCurrentWorldToCameraTransform());
 
                 // If camera tracking failed, no data integration or raycast for reference
                 // point cloud will have taken place, and the internal camera pose
@@ -337,13 +337,13 @@ namespace Portrait3D
                 }
                 else
                 {
-                    Matrix4 calculatedCameraPose = volume.GetCurrentWorldToCameraTransform();
+                    Matrix4 calculatedCameraPose = Volume.GetCurrentWorldToCameraTransform();
 
                     // Set the camera pose and reset tracking errors
                     worldToCameraTransform = calculatedCameraPose;
                 }
                 // Calculate the point cloud
-                volume.CalculatePointCloud(pointCloudBuffer, worldToCameraTransform);
+                Volume.CalculatePointCloud(pointCloudBuffer, worldToCameraTransform);
 
                 // Shade point cloud and render
                 FusionDepthProcessor.ShadePointCloud(
@@ -375,7 +375,7 @@ namespace Portrait3D
             depthFloatBuffer?.Dispose();
             pointCloudBuffer?.Dispose();
             shadedSurfaceColorFrame?.Dispose();
-            volume?.Dispose();
+            Volume?.Dispose();
         }
 
         protected virtual void OnError(ErrorEventArgs e)
