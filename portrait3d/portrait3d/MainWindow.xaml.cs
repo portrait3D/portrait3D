@@ -9,7 +9,6 @@ namespace Portrait3D
     using System;
     using System.Diagnostics;
     using System.IO;
-    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Media;
@@ -36,31 +35,31 @@ namespace Portrait3D
         /// <summary>
         /// Precision factor for the voxels
         /// </summary>
-        private const int precisionFactor = 2;
+        private int precisionFactor = 2;
 
         /// <summary>
         /// The reconstruction volume voxel density in voxels per meter (vpm)
         /// 1000mm / 256vpm = ~3.9mm/voxel
         /// </summary>
-        private const int VoxelsPerMeter = 256 * precisionFactor;
+        private int VoxelsPerMeter = 256;
 
         /// <summary>
         /// The reconstruction volume voxel resolution in the X axis
         /// At a setting of 256vpm the volume is 256 / 256 = 1m wide
         /// </summary>
-        private const int VoxelResolutionX = 256 * precisionFactor;
+        private int VoxelResolutionX = 256;
 
         /// <summary>
         /// The reconstruction volume voxel resolution in the Y axis
         /// At a setting of 256vpm the volume is 128 / 256 = 1m high
         /// </summary>
-        private const int VoxelResolutionY = 128 * precisionFactor;
+        private int VoxelResolutionY = 128;
 
         /// <summary>
         /// The reconstruction volume voxel resolution in the Z axis
         /// At a setting of 256vpm the volume is 256 / 256 = 1m deep
         /// </summary>
-        private const int VoxelResolutionZ = 256 * precisionFactor;
+        private int VoxelResolutionZ = 256;
 
         /// <summary>
         /// The reconstruction volume processor type. This parameter sets whether AMP or CPU processing
@@ -629,7 +628,7 @@ namespace Portrait3D
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        private void Start(object sender, RoutedEventArgs e)
+        private void ControlStartStop(object sender, RoutedEventArgs e)
         {
             if (this.isRunning)
             {
@@ -722,6 +721,11 @@ namespace Portrait3D
         {
             Exporter.CreateExportFolderIfInexistant();
             Process.Start(Exporter.DirectoryPath);
+        }
+
+        private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+
         }
     }
 }
