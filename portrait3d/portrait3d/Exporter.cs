@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Kinect.Toolkit.Fusion;
 using System.IO;
 using System.Globalization;
@@ -44,9 +44,6 @@ namespace Portrait3D
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vertex = vertices[i];
-
-                // string vertexString = "v " + (vertex.X - centers.Item1).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y).ToString(CultureInfo.InvariantCulture) + 
-                //    " " + (-vertex.Z + centers.Item2).ToString(CultureInfo.InvariantCulture);
                 string vertexString = "v " + (vertex.X + centers[0]).ToString(CultureInfo.InvariantCulture) + " " + (-vertex.Y - centers[1]).ToString(CultureInfo.InvariantCulture) +
                     " " + (-vertex.Z + centers[2]).ToString(CultureInfo.InvariantCulture);
                 writer.WriteLine(vertexString);
