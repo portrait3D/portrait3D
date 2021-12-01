@@ -89,14 +89,14 @@ namespace Portrait3D
             string msg = Reconstructor.VerifySuitableDirect11CompatibleHardwareExists();
             if (msg != string.Empty)
             {
-                statusBarText.Text = msg;
+                StatusBarText.Text = msg;
                 return;
             }
 
             sensor = new Sensor(depthImageSize);
             if (!sensor.SensorConnected())
             {
-                statusBarText.Text = Properties.Resources.NoKinectReady;
+                StatusBarText.Text = Properties.Resources.NoKinectReady;
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace Portrait3D
 
         private void Reconstructor_ErrorEvent(object sender, Reconstructor.ErrorEventArgs e)
         {
-            statusBarText.Text = e.Message;
+            StatusBarText.Text = e.Message;
         }
 
         private void Reconstructor_FrameProcessed(object sender, EventArgs e)
@@ -151,13 +151,13 @@ namespace Portrait3D
         {
             if (!sensor.SensorConnected())
             {
-                statusBarText.Text = Properties.Resources.ConnectDeviceFirst;
+                StatusBarText.Text = Properties.Resources.ConnectDeviceFirst;
                 return;
             }
 
             // reset the reconstruction and update the status text
             ResetReconstruction();
-            statusBarText.Text = Properties.Resources.ResetReconstruction;
+            StatusBarText.Text = Properties.Resources.ResetReconstruction;
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Portrait3D
         /// <param name="e">Event arguments</param>
         private void Fps_FPSChanged(object sender, EventArgs e)
         {
-            statusBarText.Text = fps.ToString();
+            StatusBarText.Text = fps.ToString();
         }
 
         private void StartSensor()
@@ -175,14 +175,14 @@ namespace Portrait3D
             string? msg = sensor.Start();
             if (msg != null)
             {
-                statusBarText.Text = msg;
+                StatusBarText.Text = msg;
                 return;
             }
 
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
-            startStopControl.Content = "Stop";
+            StartStopControl.Content = "Stop";
             isRunning = !isRunning;
         }
 
@@ -191,13 +191,13 @@ namespace Portrait3D
             string? msg = sensor.Stop();
             if (msg != null)
             {
-                statusBarText.Text = msg;
+                StatusBarText.Text = msg;
                 return;
             }
 
             fps.Stop();
 
-            startStopControl.Content = "Start";
+            StartStopControl.Content = "Start";
             isRunning = !isRunning;
         }
 
@@ -217,7 +217,7 @@ namespace Portrait3D
                 StartSensor();
             }
 
-            export.IsEnabled = true;
+            ButtonExport.IsEnabled = true;
         }
 
         /// <summary>

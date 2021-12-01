@@ -14,15 +14,15 @@
         <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
             <Image Name="Image" Width="640" Height="480"/>
         </Viewbox>
-        <Label Name="precisionText" Content="Précision" Grid.Row="2" Margin="10,7,0,0" HorizontalAlignment="Left" Width="58" Height="23" VerticalAlignment="Top" RenderTransformOrigin="0.506,0.899"/>
-        <xctk:IntegerUpDown Name="precisionValue" FormatString="N0" Value="2" Minimum="1" Maximum="5" Increment="1" ValueChanged="changedValue" Grid.Row="2" Margin="68,10,0,0"  Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="48"/>
-        <Button Name="startStopControl" Content="Start" Click="StartStopToggle" Grid.Row="2" Margin="127,10,540,0" Height="20" VerticalAlignment="Top"/>
-        <Button Name="export" Content="Export model" Click="Export" IsEnabled="False" Grid.Row="2" Margin="0,10,338,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="105"/>
-        <Button Name="buttonOpenExport" Content="Open export folder..." Click="OpenExportFolder" Grid.Row="2" Margin="0,10,215,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="118"/>
-        <Button Name="buttonResetReconstruction"  Click="ButtonResetReconstructionClick" Content="Reset Reconstruction" Grid.Row="2" Height="20" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="115"/>
+        <Label Content="Précision" Grid.Row="2" Margin="10,7,0,0" HorizontalAlignment="Left" Width="58" Height="23" VerticalAlignment="Top" RenderTransformOrigin="0.506,0.899"/>
+        <xctk:IntegerUpDown Name="PrecisionSelector" FormatString="N0" Value="1" Minimum="1" Maximum="5" Increment="1" ValueChanged="changedValue" AllowTextInput="False" AllowSpin="True" Grid.Row="2" Margin="68,10,0,0"  Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="48"/>
+        <Button Name="StartStopControl" Content="Start" Click="StartStopToggle" Grid.Row="2" Margin="127,10,540,0" Height="20" VerticalAlignment="Top"/>
+        <Button Name="ButtonExport" Content="Export model" Click="Export" IsEnabled="False" Grid.Row="2" Margin="0,10,338,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="105"/>
+        <Button Content="Open export folder..." Click="OpenExportFolder" Grid.Row="2" Margin="0,10,215,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="118"/>
+        <Button Click="ButtonResetReconstructionClick" Content="Reset Reconstruction" Grid.Row="2" Height="20" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="115"/>
         <StatusBar Grid.Row="3" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White">
             <StatusBarItem Padding="0 0 0 10">
-                <TextBlock Name="statusBarText"></TextBlock>
+                <TextBlock Name="StatusBarText"></TextBlock>
             </StatusBarItem>
         </StatusBar>
     </Grid>
