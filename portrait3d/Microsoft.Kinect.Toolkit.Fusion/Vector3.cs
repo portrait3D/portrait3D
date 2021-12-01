@@ -30,6 +30,13 @@ namespace Microsoft.Kinect.Toolkit.Fusion
         /// </summary>
         public float Z { get; set; }
 
+        public Vector3(float X, float Y, float Z)
+        {
+            this.X = X;
+            this.Y = Y;
+            this.Z = Z;
+        }
+
         /// <summary>
         /// Compares two Vector3 objects for equality.
         /// </summary>
