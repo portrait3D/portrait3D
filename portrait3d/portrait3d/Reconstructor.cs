@@ -184,7 +184,7 @@ namespace Portrait3D
             }
             catch (DllNotFoundException)
             {
-                OnError(new ErrorEventArgs(Properties.Resources.MissingPrerequisite));
+                OnError(new ErrorEventArgs(Properties.Resources.NoDirectX11CompatibleDeviceOrInvalidDeviceIndex));
                 return;
             }
 
@@ -228,7 +228,7 @@ namespace Portrait3D
             }
             catch (DllNotFoundException)
             {
-                return Properties.Resources.MissingPrerequisite;
+                return Properties.Resources.NoDirectX11CompatibleDeviceOrInvalidDeviceIndex;
             }
             catch (InvalidOperationException ex)
             {
@@ -302,9 +302,9 @@ namespace Portrait3D
         /// <returns>null if everything is fine, an error message if error</returns>
         private void ProcessDepthData()
         {
-            Debug.Assert(Volume != null, "volume should be initialized");
-            Debug.Assert(shadedSurfaceColorFrame != null, "shaded surface should be initialized");
-            Debug.Assert(ColorBitmap != null, "color bitmap should be initialized");
+            Debug.Assert(Volume != null, Properties.Resources.VolumeNull);
+            Debug.Assert(shadedSurfaceColorFrame != null, Properties.Resources.ShadedSurfaceNull);
+            Debug.Assert(ColorBitmap != null, Properties.Resources.ColorBitmapNull);
 
             try
             {
