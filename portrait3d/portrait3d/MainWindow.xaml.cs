@@ -1,10 +1,6 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="MainWindow.xaml.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit.Fusion;
@@ -44,6 +40,7 @@ namespace Portrait3D
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public MainWindow()
         {
             InitializeComponent();
@@ -89,17 +86,17 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            string? msg = Reconstructor.VerifySuitableDirect11CompatibleHardwareExists();
-            if (msg != null)
+            string msg = Reconstructor.VerifySuitableDirect11CompatibleHardwareExists();
+            if (msg != string.Empty)
             {
-                statusBarText.Text = msg;
+                StatusBarText.Text = msg;
                 return;
             }
 
             sensor = new Sensor(depthImageSize);
             if (!sensor.SensorConnected())
             {
-                statusBarText.Text = Properties.Resources.NoKinectReady;
+                StatusBarText.Text = Properties.Resources.NoKinectReady;
                 return;
             }
 
@@ -116,7 +113,7 @@ namespace Portrait3D
 
         private void Reconstructor_ErrorEvent(object sender, Reconstructor.ErrorEventArgs e)
         {
-            statusBarText.Text = e.Message;
+            StatusBarText.Text = e.Message;
         }
 
         private void Reconstructor_FrameProcessed(object sender, EventArgs e)
@@ -154,13 +151,13 @@ namespace Portrait3D
         {
             if (!sensor.SensorConnected())
             {
-                statusBarText.Text = Properties.Resources.ConnectDeviceFirst;
+                StatusBarText.Text = Properties.Resources.ConnectDeviceFirst;
                 return;
             }
 
             // reset the reconstruction and update the status text
             ResetReconstruction();
-            statusBarText.Text = Properties.Resources.ResetReconstruction;
+            StatusBarText.Text = Properties.Resources.ResetReconstruction;
         }
 
         /// <summary>
@@ -170,7 +167,7 @@ namespace Portrait3D
         /// <param name="e">Event arguments</param>
         private void Fps_FPSChanged(object sender, EventArgs e)
         {
-            statusBarText.Text = fps.ToString();
+            StatusBarText.Text = fps.ToString();
         }
 
         private void StartSensor()
@@ -178,14 +175,14 @@ namespace Portrait3D
             string? msg = sensor.Start();
             if (msg != null)
             {
-                statusBarText.Text = msg;
+                StatusBarText.Text = msg;
                 return;
             }
 
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
-            Control.Content = "Stop";
+            StartStopControl.Content = "Stop";
             isRunning = !isRunning;
         }
 
@@ -194,16 +191,21 @@ namespace Portrait3D
             string? msg = sensor.Stop();
             if (msg != null)
             {
-                statusBarText.Text = msg;
+                StatusBarText.Text = msg;
                 return;
             }
 
             fps.Stop();
 
-            Control.Content = "Start";
+            StartStopControl.Content = "Start";
             isRunning = !isRunning;
         }
 
+        /// <summary>
+        /// Handles the user clicking on the start/stop button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void StartStopToggle(object sender, RoutedEventArgs e)
         {
             if (isRunning)
@@ -214,6 +216,34 @@ namespace Portrait3D
             {
                 StartSensor();
             }
+
+            ButtonExport.IsEnabled = true;
+        }
+
+        /// <summary>
+        /// Handles the user clicking on the export model button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void Export(object sender, RoutedEventArgs e)
+        {
+            Task.Factory.StartNew(() => Exporter.ExportMeshToFile(reconstructor.Volume.CalculateMesh(1)));
+        }
+
+        /// <summary>
+        /// Handles the user clicking the open export folder button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void OpenExportFolder(object sender, RoutedEventArgs e)
+        {
+            Exporter.CreateExportFolderIfInexistant();
+            Process.Start(Exporter.DirectoryPath);
+        }
+
+        private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+
         }
     }
 }

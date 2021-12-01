@@ -66,8 +66,8 @@ namespace Portrait3D
         /// </summary>
         public event EventHandler<DepthImageFrameReadyEventArgs> DepthFrameReady
         {
-            add { sensor.DepthFrameReady += value; }
-            remove { sensor.DepthFrameReady -= value; }
+            add { if (sensor != null) sensor.DepthFrameReady += value; }
+            remove { if (sensor != null) sensor.DepthFrameReady -= value; }
         }
 
         /// <summary>
