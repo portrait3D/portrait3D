@@ -1,10 +1,6 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="MainWindow.xaml.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit.Fusion;
@@ -43,6 +39,7 @@ namespace Portrait3D
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public MainWindow()
         {
             InitializeComponent();
@@ -88,8 +85,8 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            string? msg = Reconstructor.VerifySuitableDirect11CompatibleHardwareExists();
-            if (msg != null)
+            string msg = Reconstructor.VerifySuitableDirect11CompatibleHardwareExists();
+            if (msg != string.Empty)
             {
                 statusBarText.Text = msg;
                 return;
@@ -184,8 +181,8 @@ namespace Portrait3D
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
-            Control.Content = "Stop";
-            isRunning = !isRunning;5
+            startStopControl.Content = "Stop";
+            isRunning = !isRunning;
         }
 
         private void StopSensor()
@@ -199,7 +196,7 @@ namespace Portrait3D
 
             fps.Stop();
 
-            Control.Content = "Start";
+            startStopControl.Content = "Start";
             isRunning = !isRunning;
         }
 
@@ -219,7 +216,7 @@ namespace Portrait3D
                 StartSensor();
             }
 
-            this.export.IsEnabled = true;
+            export.IsEnabled = true;
         }
 
         /// <summary>
@@ -229,7 +226,7 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void Export(object sender, RoutedEventArgs e)
         {
-            Task.Factory.StartNew(() => Exporter.ExportMeshToFile(volume.CalculateMesh(1)));
+            Task.Factory.StartNew(() => Exporter.ExportMeshToFile(reconstructor.Volume.CalculateMesh(1)));
         }
 
         /// <summary>

@@ -97,7 +97,7 @@ namespace Portrait3D
         }
 
         /// <summary>
-        /// Generates a save file dialog and saves based on the extension selected.
+        /// Exports the file to the default directory with incrementing name
         /// </summary>
         /// <param name="mesh">Calculated mesh object</param>
         public static void ExportMeshToFile(Mesh mesh)
@@ -108,7 +108,7 @@ namespace Portrait3D
                 File.WriteAllText(fileNamePath, "0");
             string exportFileName = File.ReadAllText(fileNamePath);
             new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
-            File.WriteAllText(fileNamePath, exportFileName);
+            File.WriteAllText(fileNamePath, exportFileName + 1);
             File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
 
             exportFileName = (int.Parse(exportFileName) + 1).ToString();
