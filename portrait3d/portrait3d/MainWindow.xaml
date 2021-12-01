@@ -19,6 +19,6 @@
                 <TextBlock Name="statusBarText"></TextBlock>
             </StatusBarItem>
         </StatusBar>
-        <Button Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="Start" Name="Control"/>
+        <Button Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="StartStopToggle" Name="Control"/>
     </Grid>
 </Window>
