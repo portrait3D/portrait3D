@@ -35,7 +35,15 @@ namespace Portrait3D
         /// </summary>
         private bool disposed;
 
+        /// <summary>
+        /// Tracks if the sensor is currently running
+        /// </summary>
         private bool isRunning = false;
+
+        /// <summary>
+        /// Precision factor for the reconstruction settings
+        /// </summary>
+        private int precisionFactor = 1;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -100,7 +108,7 @@ namespace Portrait3D
                 return;
             }
 
-            reconstructor = new Reconstructor(sensor, depthImageSize, 256, new Vector3(256, 128, 256));
+            reconstructor = new Reconstructor(sensor, depthImageSize, 256, new Vector3(256 * precisionFactor, 128 * precisionFactor, 256 * precisionFactor));
             reconstructor.FrameProcessed += Reconstructor_FrameProcessed;
             reconstructor.ErrorEvent += Reconstructor_ErrorEvent;
 
@@ -178,7 +186,7 @@ namespace Portrait3D
                 StatusBarText.Text = msg;
                 return;
             }
-
+            
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
@@ -241,9 +249,14 @@ namespace Portrait3D
             Process.Start(Exporter.DirectoryPath);
         }
 
+        /// <summary>
+        /// Handles the change of value of the precision input
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-
+            precisionFactor = (int)PrecisionSelector.Value;
         }
     }
 }

@@ -107,11 +107,12 @@ namespace Portrait3D
             if (!File.Exists(fileNamePath))
                 File.WriteAllText(fileNamePath, "0");
             string exportFileName = File.ReadAllText(fileNamePath);
-            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
-            File.WriteAllText(fileNamePath, exportFileName + 1);
-            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
 
             exportFileName = (int.Parse(exportFileName) + 1).ToString();
+            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
+            File.WriteAllText(fileNamePath, exportFileName);
+            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
+
 
             Stream stream = File.OpenWrite(DirectoryPath + exportFileName + ".obj");
             StreamWriter streamWriter = new StreamWriter(stream);
