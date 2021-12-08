@@ -267,6 +267,8 @@ namespace Portrait3D
                 {
                     Volume.ResetReconstruction(worldToCameraTransform);
                 }
+
+                ResetBitmap();
             }
         }
 
@@ -294,6 +296,16 @@ namespace Portrait3D
                     }
                 }
             }
+        }
+
+        private void ResetBitmap()
+        {
+            // Write the pixel data into our bitmap
+            ColorBitmap.WritePixels(
+                new Int32Rect(0, 0, ColorBitmap.PixelWidth, ColorBitmap.PixelHeight),
+                new int[ColorBitmap.PixelWidth, ColorBitmap.PixelHeight],
+                ColorBitmap.PixelWidth * sizeof(int),
+                0);
         }
 
         /// <summary>

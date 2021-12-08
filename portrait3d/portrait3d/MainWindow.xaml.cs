@@ -2,8 +2,10 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit.Fusion;
+using Xceed.Wpf.Toolkit;
 
 #nullable enable
 namespace Portrait3D
@@ -108,7 +110,12 @@ namespace Portrait3D
                 return;
             }
 
-            reconstructor = new Reconstructor(sensor, depthImageSize, 256, new Vector3(256 * precisionFactor, 128 * precisionFactor, 256 * precisionFactor));
+            initiliazeReconstructor();
+        }
+
+        private void initiliazeReconstructor()
+        {
+            reconstructor = new Reconstructor(sensor, depthImageSize, 256 * precisionFactor, new Vector3(256 * precisionFactor, 128 * precisionFactor, 256 * precisionFactor));
             reconstructor.FrameProcessed += Reconstructor_FrameProcessed;
             reconstructor.ErrorEvent += Reconstructor_ErrorEvent;
 
@@ -166,6 +173,8 @@ namespace Portrait3D
             // reset the reconstruction and update the status text
             ResetReconstruction();
             StatusBarText.Text = Properties.Resources.ResetReconstruction;
+
+            ButtonExport.IsEnabled = false;
         }
 
         /// <summary>
@@ -190,6 +199,9 @@ namespace Portrait3D
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
+            PrecisionSelector.IsEnabled = false;
+            ButtonExport.IsEnabled = false;
+
             StartStopControl.Content = "Stop";
             isRunning = !isRunning;
         }
@@ -204,6 +216,9 @@ namespace Portrait3D
             }
 
             fps.Stop();
+
+            PrecisionSelector.IsEnabled = true;
+            ButtonExport.IsEnabled = true;
 
             StartStopControl.Content = "Start";
             isRunning = !isRunning;
@@ -224,8 +239,6 @@ namespace Portrait3D
             {
                 StartSensor();
             }
-
-            ButtonExport.IsEnabled = true;
         }
 
         /// <summary>
@@ -257,6 +270,10 @@ namespace Portrait3D
         private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             precisionFactor = (int)PrecisionSelector.Value;
+            if (reconstructor != null)
+            {
+                initiliazeReconstructor();
+            }
         }
     }
 }
