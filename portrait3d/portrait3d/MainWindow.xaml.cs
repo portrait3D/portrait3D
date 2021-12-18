@@ -292,30 +292,9 @@ namespace Portrait3D
             Task.Factory.StartNew(() => Exporter.ExportMeshToFile(reconstructor.Volume.CalculateMesh(1)));
         }
 
-        /// <summary>
-        /// Handles the user clicking the open export folder button
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void OpenExportFolder(object sender, RoutedEventArgs e)
-        {
-            Exporter.CreateExportFolderIfInexistant();
-            Process.Start(Exporter.DirectoryPath);
-        }
-
         private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
 
-        }
-
-        /// <summary>
-        /// Handles the user clicking on the export model button
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
-        private void Export(object sender, RoutedEventArgs e)
-        {
-            Task.Factory.StartNew(() => Exporter.ExportMeshToFile(reconstructor.Volume.CalculateMesh(1)));
         }
 
         /// <summary>

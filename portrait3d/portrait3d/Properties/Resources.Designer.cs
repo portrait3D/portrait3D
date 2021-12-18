@@ -61,7 +61,8 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kinect Fusion camera tracking failed. Align the camera to the last tracked position..
+        ///   Looks up a localized string similar to Le suivi de la caméra Kinect Fusion a échoué. Alignez la caméra sur la dernière position suivie.
+        ///.
         /// </summary>
         internal static string CameraTrackingFailed {
             get {
@@ -70,7 +71,16 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect a device first, and then restart the program!.
+        ///   Looks up a localized string similar to Le bitmap de couleur doit être initialisé.
+        /// </summary>
+        internal static string ColorBitmapNull {
+            get {
+                return ResourceManager.GetString("ColorBitmapNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connectez d&apos;abord un appareil, puis redémarrez le programme!.
         /// </summary>
         internal static string ConnectDeviceFirst {
             get {
@@ -88,7 +98,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Mesh.
+        ///   Looks up a localized string similar to Maillage invalide.
         /// </summary>
         internal static string InvalidMeshArgument {
             get {
@@ -97,16 +107,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kinect Fusion camera tracking failed in transform magnitude check..
-        /// </summary>
-        internal static string InvalidMeshArgument {
-            get {
-                return ResourceManager.GetString("InvalidMeshArgument", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A prerequisite component for Kinect Fusion is missing. Please refer to the Toolkit documentation for assistance..
+        ///   Looks up a localized string similar to Aucun périphérique DirectX11 détecté ou index de périphérique non valide - Kinect Fusion nécessite un périphérique DirectX11 pour la reconstruction basée sur GPU..
         /// </summary>
         internal static string NoDirectX11CompatibleDeviceOrInvalidDeviceIndex {
             get {
@@ -115,7 +116,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Near mode is not supported by device.
+        ///   Looks up a localized string similar to Aucune Kinect trouvée!.
         /// </summary>
         internal static string NoKinectReady {
             get {
@@ -124,7 +125,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No DirectX11 device detected, or invalid device index - Kinect Fusion requires a DirectX11 device for GPU-based reconstruction..
+        ///   Looks up a localized string similar to La reconstruction a été réinitialisée..
         /// </summary>
         internal static string ResetReconstruction {
             get {
@@ -133,7 +134,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No ready Kinect found!.
+        ///   Looks up a localized string similar to Le suivi a échoué, réinitialistion automatique du volume..
         /// </summary>
         internal static string ResetVolume {
             get {
@@ -142,7 +143,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reconstruction has been reset..
+        ///   Looks up a localized string similar to La surface ombrée doit être initialisée.
         /// </summary>
         internal static string ShadedSurfaceNull {
             get {
@@ -151,7 +152,7 @@ namespace Portrait3D.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kinect Fusion camera tracking failed, automatically reset volume..
+        ///   Looks up a localized string similar to Le volume doit être initialisé.
         /// </summary>
         internal static string VolumeNull {
             get {
