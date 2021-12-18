@@ -1,7 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit.Fusion;
 
@@ -35,7 +38,15 @@ namespace Portrait3D
         /// </summary>
         private bool disposed;
 
+        /// <summary>
+        /// Tracks if the sensor is currently running
+        /// </summary>
         private bool isRunning = false;
+
+        /// <summary>
+        /// Precision factor for the reconstruction settings
+        /// </summary>
+        private int precisionFactor = 1;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -86,6 +97,15 @@ namespace Portrait3D
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+            // Set default blank image for Image component in case we don't have a Kinect so it doesn't show the background
+            Image.Source = new WriteableBitmap(
+                depthImageSize.Width,
+                depthImageSize.Height,
+                96.0,
+                96.0,
+                PixelFormats.Bgr32,
+                null);
+
             string msg = Reconstructor.VerifySuitableDirect11CompatibleHardwareExists();
             if (msg != string.Empty)
             {
@@ -100,7 +120,23 @@ namespace Portrait3D
                 return;
             }
 
-            reconstructor = new Reconstructor(sensor, depthImageSize, 256, new Vector3(256, 128, 256));
+            initiliazeReconstructor();
+        }
+
+        /// <summary>
+        /// Initialize the reconstructor and event handlers and link the output image to the application Image
+        /// </summary>
+        private void initiliazeReconstructor()
+        {
+            if (reconstructor != null)
+            {
+                reconstructor.FrameProcessed -= Reconstructor_FrameProcessed;
+                reconstructor.ErrorEvent -= Reconstructor_ErrorEvent;
+                sensor.DepthFrameReady -= reconstructor.SensorFramesReady;
+                reconstructor.Dispose();
+            }
+
+            reconstructor = new Reconstructor(sensor, depthImageSize, 256 * precisionFactor, new Vector3(256 * precisionFactor, 128 * precisionFactor, 256 * precisionFactor));
             reconstructor.FrameProcessed += Reconstructor_FrameProcessed;
             reconstructor.ErrorEvent += Reconstructor_ErrorEvent;
 
@@ -111,11 +147,21 @@ namespace Portrait3D
             sensor.DepthFrameReady += reconstructor.SensorFramesReady;
         }
 
+        /// <summary>
+        /// When an error happens, show the message in the status bar
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void Reconstructor_ErrorEvent(object sender, Reconstructor.ErrorEventArgs e)
         {
             StatusBarText.Text = e.Message;
         }
 
+        /// <summary>
+        /// When a frame is processed, increment the FPS manager's frame count to update fps
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void Reconstructor_FrameProcessed(object sender, EventArgs e)
         {
             // The input frame was processed successfully, increase the processed frame count
@@ -158,6 +204,8 @@ namespace Portrait3D
             // reset the reconstruction and update the status text
             ResetReconstruction();
             StatusBarText.Text = Properties.Resources.ResetReconstruction;
+
+            ButtonExport.IsEnabled = false;
         }
 
         /// <summary>
@@ -170,6 +218,10 @@ namespace Portrait3D
             StatusBarText.Text = fps.ToString();
         }
 
+        /// <summary>
+        /// Starts the sensor, FPS manager and update button manageability and text
+        /// Shows the error message if an error occurs during the start process
+        /// </summary>
         private void StartSensor()
         {
             string? msg = sensor.Start();
@@ -182,10 +234,17 @@ namespace Portrait3D
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
-            StartStopControl.Content = "Stop";
+            PrecisionSelector.IsEnabled = false;
+            ButtonExport.IsEnabled = false;
+
+            StartStopControl.Content = "Arrêter";
             isRunning = !isRunning;
         }
 
+        /// <summary>
+        /// Stops the sensor, FPS manager and update button manageability and text
+        /// Show the error message if an error occus during the stop process
+        /// </summary>
         private void StopSensor()
         {
             string? msg = sensor.Stop();
@@ -197,7 +256,10 @@ namespace Portrait3D
 
             fps.Stop();
 
-            StartStopControl.Content = "Start";
+            PrecisionSelector.IsEnabled = true;
+            ButtonExport.IsEnabled = true;
+
+            StartStopControl.Content = "Démarrer";
             isRunning = !isRunning;
         }
 
@@ -244,6 +306,41 @@ namespace Portrait3D
         private void changedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
 
+        }
+
+        /// <summary>
+        /// Handles the user clicking on the export model button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void Export(object sender, RoutedEventArgs e)
+        {
+            Task.Factory.StartNew(() => Exporter.ExportMeshToFile(reconstructor.Volume.CalculateMesh(1)));
+        }
+
+        /// <summary>
+        /// Handles the user clicking the open export folder button
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void OpenExportFolder(object sender, RoutedEventArgs e)
+        {
+            Exporter.OpenExportFolder();
+        }
+
+        /// <summary>
+        /// Handles the change of value of the precision input
+        /// Reinitializes the reconstructor with the new precision factor value
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PrecisionSelectorChangedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            precisionFactor = (int)PrecisionSelector.Value;
+            if (reconstructor != null)
+            {
+                initiliazeReconstructor();
+            }
         }
     }
 }

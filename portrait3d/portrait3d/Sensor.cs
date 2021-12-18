@@ -84,7 +84,7 @@ namespace Portrait3D
                     return Properties.Resources.NoKinectReady;
                 }
                 sensor.Start();
-                sensor.ElevationAngle = 10;
+                sensor.ElevationAngle = 5;
             }
             catch (IOException ex)
             {

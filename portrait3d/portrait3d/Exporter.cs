@@ -4,6 +4,7 @@ using System.IO;
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Portrait3D
 {
@@ -14,7 +15,7 @@ namespace Portrait3D
     {
         // Name of the file containing the next name to use for the next export file
         public const string DirectoryPath = "..\\..\\..\\Portraits\\";
-        private const string ExportNameFileName = "exportName.txt";
+        private const string ExportNameFilePath = DirectoryPath + "exportName.txt";
 
         /// <summary>
         /// Save mesh in ASCII Wavefront .OBJ file
@@ -71,6 +72,7 @@ namespace Portrait3D
 
         /// <summary>
         /// Calculates the center point of the model as a list of X, Y and Z coordinates
+        /// This allows us to translate our vertices coordinates to center our model when imported in an engine
         /// </summary>
         /// <param name="vertices">List of vertices of the mesh</param>
         /// <returns>Float list of the middle points between the farthest Xs, Ys and Zs</returns>
@@ -103,15 +105,7 @@ namespace Portrait3D
         public static void ExportMeshToFile(Mesh mesh)
         {
             CreateExportFolderIfInexistant();
-            string fileNamePath = DirectoryPath + ExportNameFileName;
-            if (!File.Exists(fileNamePath))
-                File.WriteAllText(fileNamePath, "0");
-            string exportFileName = File.ReadAllText(fileNamePath);
-            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
-            File.WriteAllText(fileNamePath, exportFileName + 1);
-            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
-
-            exportFileName = (int.Parse(exportFileName) + 1).ToString();
+            string exportFileName = getExportFileNameAndIncrement();
 
             Stream stream = File.OpenWrite(DirectoryPath + exportFileName + ".obj");
             StreamWriter streamWriter = new StreamWriter(stream);
@@ -120,13 +114,37 @@ namespace Portrait3D
             streamWriter.Close();
         }
 
+        private static string getExportFileNameAndIncrement()
+        {
+            string fileNamePath = ExportNameFilePath;
+            if (!File.Exists(fileNamePath))
+                File.WriteAllText(fileNamePath, "0");
+            string exportFileName = File.ReadAllText(fileNamePath);
+
+            exportFileName = (int.Parse(exportFileName) + 1).ToString();
+            new FileInfo(fileNamePath).Attributes &= ~FileAttributes.Hidden;
+            File.WriteAllText(fileNamePath, exportFileName);
+            File.SetAttributes(fileNamePath, File.GetAttributes(fileNamePath) | FileAttributes.Hidden);
+
+            return exportFileName;
+        }
+
         /// <summary>
         /// Method that creates the location for export files if inexistant
         /// </summary>
-        public static void CreateExportFolderIfInexistant()
+        private static void CreateExportFolderIfInexistant()
         {
             if (!Directory.Exists(DirectoryPath))
                 Directory.CreateDirectory(DirectoryPath);
+        }
+
+        /// <summary>
+        /// Open the export folder and create it if does not exist
+        /// </summary>
+        internal static void OpenExportFolder()
+        {
+            CreateExportFolderIfInexistant();
+            Process.Start(DirectoryPath);
         }
     }
 }

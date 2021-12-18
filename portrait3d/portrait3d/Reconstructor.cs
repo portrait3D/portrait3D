@@ -267,6 +267,8 @@ namespace Portrait3D
                 {
                     Volume.ResetReconstruction(worldToCameraTransform);
                 }
+
+                ResetBitmap();
             }
         }
 
@@ -294,6 +296,16 @@ namespace Portrait3D
                     }
                 }
             }
+        }
+
+        private void ResetBitmap()
+        {
+            // Write the pixel data into our bitmap
+            ColorBitmap.WritePixels(
+                new Int32Rect(0, 0, ColorBitmap.PixelWidth, ColorBitmap.PixelHeight),
+                new int[ColorBitmap.PixelWidth, ColorBitmap.PixelHeight],
+                ColorBitmap.PixelWidth * sizeof(int),
+                0);
         }
 
         /// <summary>
@@ -370,6 +382,9 @@ namespace Portrait3D
             }
         }
 
+        /// <summary>
+        /// Dispose of all the components of the object if they exist
+        /// </summary>
         public void Dispose()
         {
             depthFloatBuffer?.Dispose();
@@ -378,11 +393,19 @@ namespace Portrait3D
             Volume?.Dispose();
         }
 
+        /// <summary>
+        /// When we raise an error, invoke our event handler if it exists
+        /// </summary>
+        /// <param name="e">event arguments</param>        
         protected virtual void OnError(ErrorEventArgs e)
         {
             ErrorEvent?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// When we raise a frame processed event, invoke our event handler if it exists
+        /// </summary>
+        /// <param name="e">event arguments</param> 
         protected virtual void OnFrameProcessed(EventArgs e)
         {
             FrameProcessed?.Invoke(this, e);
