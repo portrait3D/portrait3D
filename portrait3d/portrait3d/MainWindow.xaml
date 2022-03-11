@@ -1,25 +1,80 @@
 ﻿<Window x:Class="Portrait3D.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        Title="Portrait 3D" Height="735" Width="770" Loaded="WindowLoaded" Closing="WindowClosing">
+        Title="Portrait 3D" Height="815" Width="770" Loaded="WindowLoaded" Closing="WindowClosing" DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
     <Grid Name="layoutGrid" Margin="10 0 10 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="160"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
             <Image Name="Image" Stretch="UniformToFill" Width="640" Height="480"/>
         </Viewbox>
-        <Label Content="Précision" Grid.Row="2" Margin="5,7,0,0" HorizontalAlignment="Left" Width="58" Height="23" VerticalAlignment="Top" RenderTransformOrigin="0.506,0.899"/>
-        <xctk:IntegerUpDown Name="PrecisionSelector" FormatString="N0" Value="1" Minimum="1" Maximum="5" Increment="1" ValueChanged="PrecisionSelectorChangedValue" AllowTextInput="False" AllowSpin="True" Grid.Row="2" Margin="61,10,0,0"  Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="48"/>
-        <Button Name="StartStopControl" Content="Démarrer" Click="StartStopToggle" Grid.Row="2" Margin="114,10,0,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
+        <Button Name="StartStopControl" Content="Démarrer" Click="StartStopToggle" Grid.Row="2" Margin="236,10,0,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
         <Button Name="ButtonExport" Content="Exportation du modèle" Click="Export" IsEnabled="False" Grid.Row="2" Margin="0,10,295,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="131"/>
         <Button Content="Ouvrir le dossier..." Click="OpenExportFolder" Grid.Row="2" Margin="0,10,172,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Right" Width="118"/>
         <Button Click="ButtonResetReconstructionClick" Content="Réinitialisation du modèle" Grid.Row="2" Height="20" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="142"/>
+        <Grid Grid.Row="2" HorizontalAlignment="Left" Width="231" Height="160" VerticalAlignment="Top" IsEnabled="{Binding NotIsRunning}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0"  Margin="-1 0 -1 0">
+                <TextBlock Foreground="Black">Voxels par mètre</TextBlock>
+            </StackPanel>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Slider Grid.Column="0" Value="{Binding VoxelsPerMeter}" Minimum="128" Maximum="768" Ticks="128 256 384 512 640 768" IsSnapToTickEnabled="True" Margin="5" ValueChanged="VolumeSettingsChanged" AutomationProperties.AutomationId="VolumeVoxelsPerMeter"/>
+                <TextBlock Grid.Column="1" Margin="0 0 5 0" Text="{Binding VoxelsPerMeter}"/>
+            </Grid>
+            <StackPanel Grid.Row="2" Margin="-1 0 -1 0">
+                <TextBlock Foreground="Black">Résolution de voxels</TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Row="3" Orientation="Vertical">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"   Margin="5 0 0 0">X Axis</TextBlock>
+                    <Slider Name="VoxelsXSlider" Grid.Column="1" Value="{Binding VoxelsX}" Minimum="128" Maximum="640" Ticks="128 256 384 512 640" IsSnapToTickEnabled="True" ValueChanged="VolumeSettingsChanged" Margin="5" AutomationProperties.AutomationId="VolumeResolutionX"/>
+                    <TextBlock Grid.Column="2"   Text="{Binding VoxelsX}" Margin="0 0 5 0"/>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"   Margin="5 0 0 0">Y Axis</TextBlock>
+                    <Slider Name="VoxelsYSlider" Grid.Column="1" Value="{Binding VoxelsY}" Minimum="128" Maximum="640" Ticks="128 256 384 512 640" IsSnapToTickEnabled="True" ValueChanged="VolumeSettingsChanged" Margin="5" AutomationProperties.AutomationId="VolumeResolutionY"/>
+                    <TextBlock Grid.Column="2"   Text="{Binding VoxelsY}" Margin="0 0 5 0"/>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"   Margin="5 0 0 0">Z Axis</TextBlock>
+                    <Slider Name="VoxelsZSlider" Grid.Column="1" Value="{Binding VoxelsZ}" Minimum="128" Maximum="640" Ticks="128 256 384 512 640" IsSnapToTickEnabled="True" ValueChanged="VolumeSettingsChanged" Margin="5" AutomationProperties.AutomationId="VolumeResolutionZ"/>
+                    <TextBlock Grid.Column="2"   Text="{Binding VoxelsZ}" Margin="0 0 5 0"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
         <StatusBar Grid.Row="4" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White">
             <StatusBarItem Padding="0 0 0 10">
                 <TextBlock Name="StatusBarText"></TextBlock>

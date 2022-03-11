@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Portrait3D
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, IDisposable
+    public partial class MainWindow : Window, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
         /// The resolution of the depth image to be processed.
@@ -44,14 +45,138 @@ namespace Portrait3D
         private bool isRunning = false;
 
         /// <summary>
-        /// Precision factor for the reconstruction settings
+        /// The reconstruction volume voxel density in voxels per meter (vpm)
+        /// 1000mm / 256vpm = ~3.9mm/voxel
         /// </summary>
-        private int precisionFactor = 1;
+        private int voxelsPerMeter = 640;
+
+        /// <summary>
+        /// The reconstruction volume voxel resolution in the X axis
+        /// At a setting of 256vpm the volume is 512 / 256 = 2m wide
+        /// </summary>
+        private int voxelsX = 640;
+
+        /// <summary>
+        /// The reconstruction volume voxel resolution in the Y axis
+        /// At a setting of 256vpm the volume is 384 / 256 = 1.5m high
+        /// </summary>
+        private int voxelsY = 512;
+
+        /// <summary>
+        /// The reconstruction volume voxel resolution in the Z axis
+        /// At a setting of 256vpm the volume is 512 / 256 = 2m deep
+        /// </summary>
+        private int voxelsZ = 640;
+
+        /// <summary>
+        /// Property change event
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Binding property to voxels per meter slider
+        /// </summary>
+        public double VoxelsPerMeter
+        {
+            get
+            {
+                return (double)this.voxelsPerMeter;
+            }
+
+            set
+            {
+                this.voxelsPerMeter = (int)(value + 0.5);
+                if (null != this.PropertyChanged)
+                {
+                    this.PropertyChanged.Invoke(this, new PropertyChangedEventArgs("VoxelsPerMeter"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binding property to X-axis volume resolution slider
+        /// </summary>
+        public double VoxelsX
+        {
+            get
+            {
+                return (double)this.voxelsX;
+            }
+
+            set
+            {
+                this.voxelsX = (int)(value + 0.5);
+                if (null != this.PropertyChanged)
+                {
+                    this.PropertyChanged.Invoke(this, new PropertyChangedEventArgs("VoxelsX"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binding property to Y-axis volume resolution slider
+        /// </summary>
+        public double VoxelsY
+        {
+            get
+            {
+                return (double)this.voxelsY;
+            }
+
+            set
+            {
+                this.voxelsY = (int)(value + 0.5);
+                if (null != this.PropertyChanged)
+                {
+                    this.PropertyChanged.Invoke(this, new PropertyChangedEventArgs("VoxelsY"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binding property to Z-axis volume resolution slider
+        /// </summary>
+        public double VoxelsZ
+        {
+            get
+            {
+                return (double)this.voxelsZ;
+            }
+
+            set
+            {
+                this.voxelsZ = (int)(value + 0.5);
+                if (null != this.PropertyChanged)
+                {
+                    this.PropertyChanged.Invoke(this, new PropertyChangedEventArgs("VoxelsZ"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binding property to Z-axis volume resolution slider
+        /// </summary>
+        public Boolean NotIsRunning
+        {
+            get
+            {
+                return !this.isRunning;
+            }
+
+            set
+            {
+                this.isRunning = !value;
+                if (null != this.PropertyChanged)
+                {
+                    this.PropertyChanged.Invoke(this, new PropertyChangedEventArgs("NotIsRunning"));
+                }
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
-        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public MainWindow()
         {
             InitializeComponent();
@@ -135,8 +260,8 @@ namespace Portrait3D
                 sensor.DepthFrameReady -= reconstructor.SensorFramesReady;
                 reconstructor.Dispose();
             }
-
-            reconstructor = new Reconstructor(sensor, depthImageSize, 256 * precisionFactor, new Vector3(256 * precisionFactor, 128 * precisionFactor, 256 * precisionFactor));
+            reconstructor = null;
+            reconstructor = new Reconstructor(sensor, depthImageSize, voxelsPerMeter, new Vector3(voxelsX, voxelsY, voxelsZ));
             reconstructor.FrameProcessed += Reconstructor_FrameProcessed;
             reconstructor.ErrorEvent += Reconstructor_ErrorEvent;
 
@@ -234,11 +359,10 @@ namespace Portrait3D
             fps.FPSChanged += Fps_FPSChanged;
             fps.Start();
 
-            PrecisionSelector.IsEnabled = false;
-            ButtonExport.IsEnabled = false;
+           ButtonExport.IsEnabled = false;
 
             StartStopControl.Content = "Arrêter";
-            isRunning = !isRunning;
+            NotIsRunning = false;
         }
 
         /// <summary>
@@ -256,11 +380,10 @@ namespace Portrait3D
 
             fps.Stop();
 
-            PrecisionSelector.IsEnabled = true;
             ButtonExport.IsEnabled = true;
 
             StartStopControl.Content = "Démarrer";
-            isRunning = !isRunning;
+            NotIsRunning = true;
         }
 
         /// <summary>
@@ -308,14 +431,13 @@ namespace Portrait3D
         }
 
         /// <summary>
-        /// Handles the change of value of the precision input
-        /// Reinitializes the reconstructor with the new precision factor value
+        /// Handler for volume setting changing event
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void PrecisionSelectorChangedValue(object sender, RoutedPropertyChangedEventArgs<object> e)
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event argument</param>
+        private void VolumeSettingsChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            precisionFactor = (int)PrecisionSelector.Value;
+
             if (reconstructor != null)
             {
                 initiliazeReconstructor();
