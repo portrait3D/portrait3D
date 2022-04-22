@@ -3,11 +3,14 @@
 Buste 3D est une technologie permettant de prendre une photographie 3D du buste d'une personne à l'aide d'une Kinect pour Xbox 360 et de l'imprimer en 3D.
 
 ## Prérequis
-Kinect for Windows Runtime v1.8:
+Kinect for Windows Runtime v1.8 :
 https://www.microsoft.com/en-ca/download/details.aspx?id=40277
 
 Kinect for Windows SDK 1.8 :
 https://www.microsoft.com/en-ca/download/details.aspx?id=40278
+
+Visual Studio 2019 :
+https://visualstudio.microsoft.com/fr/vs/older-downloads/#visual-studio-2019-and-other-products
 
 ## Manuels d'utilisation
 [Manuel_utilisation.pdf](/Manuel_utilisation.pdf)
