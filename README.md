@@ -23,3 +23,5 @@ Ce projet est non fonctionnel. Il s'agit seulement d'une ébauche pour l'utilisa
 ## [unity](/unity)
 Ce projet Unity contient une scène pour observer des objets sur un HTC Vive.
 
+## [Paramètres Cura](cura_profile.curaprofile)
+
