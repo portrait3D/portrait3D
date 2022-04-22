@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Portrait3D.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Portrait 3D" Height="815" Width="770" Loaded="WindowLoaded" Closing="WindowClosing" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        Title="Buste 3D" Height="815" Width="770" Loaded="WindowLoaded" Closing="WindowClosing" DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
     <Grid Name="layoutGrid" Margin="10 0 10 0">
         <Grid.RowDefinitions>
