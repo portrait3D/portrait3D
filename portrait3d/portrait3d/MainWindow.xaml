@@ -80,5 +80,15 @@
                 <TextBlock Name="StatusBarText"></TextBlock>
             </StatusBarItem>
         </StatusBar>
+        <Label Content="Projet par : Étienne Lacasse et Benjamin Provost" Margin="0,0,10,10" Grid.Row="2" Height="26" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" Width="268">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleY="-0.109"/>
+                    <RotateTransform/>
+                    <TranslateTransform Y="0.248"/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
     </Grid>
 </Window>
